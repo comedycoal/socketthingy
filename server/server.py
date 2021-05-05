@@ -2,8 +2,6 @@
 import socket
 import concurrent.futures
 
-import dummies
-
 HEADER = 64
 FORMAT = "utf-8"
 
@@ -12,7 +10,6 @@ PORT = 6666
 BACKLOG = 10
 
 class ServerProgram:
-
     def __init__(self, host, port, backlog):
         self.serverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.serverSocket.bind((host, port))
@@ -57,23 +54,20 @@ class ServerProgram:
         if not self.currHandler:
             if request == 'SHUTDOWN':
                 self.currHandler = ShutdownHandler()
-            elif request == 'PROCESS':
-                self.currHandler = ProcessHandler()
-            elif request == 'APPLICATION':
-                self.currHandler = ApplicationHandler()
-            elif request == 'SCREENSHOT':
-                self.currHandler = ScreenshotHandler()
-            elif request == 'REGISTRY':
-                self.currHandler = RegistryHandler()
-            elif request == 'KEYSTROKE':
-                self.currHandler = KeyStrokeHandler()
-            elif request == 'EXIT':
-                self.currHandler = ExitHandler()
-            
-        state = HandlerState.UNKNOWN
-        if self.currHandler:
-            #handle here
-            pass
+                
+
+        #     elif request == 'PROCESS':
+        #         self.currHandler = ProcessHandler()
+        #     elif request == 'APPLICATION':
+        #         self.currHandler = ApplicationHandler()
+        #     elif request == 'SCREENSHOT':
+        #         self.currHandler = ScreenshotHandler()
+        #     elif request == 'REGISTRY':
+        #         self.currHandler = RegistryHandler()
+        #     elif request == 'KEYSTROKE':
+        #         self.currHandler = KeyStrokeHandler()
+        #     elif request == 'EXIT':
+        #         self.currHandler = ExitHandler()
 
         
 

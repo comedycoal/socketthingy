@@ -11,17 +11,21 @@ PORT = 6666
 class ClientProgram:
     def __init__(self, host, port):
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.sock.connect((HOST, PORT))
+        self.sock.connect((host, port))
         self.requestID = 0
         
     def __del__(self):
         self.sock.close()
 
     def Run(self):
+        a = 0
         while True:
+            a += 1
             self.MakeRequest("PROCESS")
             print(self.requestID)
             time.sleep(3)
+            if a == 3:
+                break
 
 
     def MakeRequest(self, request):
