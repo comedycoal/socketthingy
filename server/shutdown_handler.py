@@ -1,20 +1,20 @@
 import os
+from handler_state import HandlerState
 
 class ShutdownHandler:
     def __init__(self):
         # super().__init__()
         pass
 
-    def Handle(self):
+    def Shutdown(self):
         #super().Handle()
 
         try:
-            os.system("shutdown /s /t 2")
+            os.system("shutdown /s /t 3")
         except:
-            print("Can't shutdown")
-            return
+            return HandlerState.FAILED
 
-        print("Shutting Down")
+        return HandlerState.SUCCEEDED
     
 if __name__ == '__main__':
     a = ShutdownHandler()

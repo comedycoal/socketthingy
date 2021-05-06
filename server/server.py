@@ -1,6 +1,8 @@
 
 import socket
-import concurrent.futures
+from shutdown_handler import ShutdownHandler
+from process_handler import ProcessHandler
+from handler_state import HandlerState
 
 HEADER = 64
 FORMAT = "utf-8"
@@ -51,11 +53,11 @@ class ServerProgram:
         self.clientSocket.send(req)
 
     def HandleRequest(self, request):
-        if not self.currHandler:
-            if request == 'SHUTDOWN':
-                self.currHandler = ShutdownHandler()
-                
-
+        state = None
+        # if not self.currHandler:
+        #     if request == 'SHUTDOWN':
+        #         self.currHandler = ShutdownHandler()
+        #         state = self.currHandler.Handle()
         #     elif request == 'PROCESS':
         #         self.currHandler = ProcessHandler()
         #     elif request == 'APPLICATION':
@@ -68,6 +70,12 @@ class ServerProgram:
         #         self.currHandler = KeyStrokeHandler()
         #     elif request == 'EXIT':
         #         self.currHandler = ExitHandler()
+
+        print(request)
+        if state == HandlerState.SUCCEEDED:
+            self.SendMessage("DONE")
+        elif state == HandlerState.FAILED:
+            self.SendMessage("FAILED")
 
         
 
