@@ -6,18 +6,23 @@ class ScreenshotHandler():
     def __init__(self):
         pass
 
-    def Handle(self):
-        pass
+    def Execute(self, reqCode:str, data:str):
+        try:
+            width, height, byte_data = self.TakeScreenshotAsBytes()
+            res = (str(width) + " " + str(height) + " ").encode("utf-8") + byte_data
+            return HandlerState.SUCCEEDED, res
+        except Exception as e:
+            print(e)
+            return HandlerState.FAILED, None
 
-    def TakeScreenshot(self):
+    def TakeScreenshotAsBytes(self):
         image = ImageGrab.grab()
         byte_data = image.tobytes()
+        width, height = image.size
         image.close()
-        return byte_data
+        return width, height, byte_data
 
 if __name__ == "__main__":
     a = ScreenshotHandler()
-    m = a.TakeScreenshot()
-    image = Image.frombytes("RGB", (1920, 1080), m)
-    image.save('shot.png')
-    image.close()
+    m, n = a.Execute("", "")
+    

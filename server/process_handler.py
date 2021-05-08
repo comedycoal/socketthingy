@@ -1,14 +1,29 @@
 import psutil
+import json
 import subprocess
 from handler_state import HandlerState
 
-class ProcessHandler():
+class ProcessHandler(): 
     def __init__(self):
         self.processes = None
         pass
 
-    def Handle(self):
-        pass
+    def Execute(self, reqCode:str, data:str):
+        try:
+            newData = None
+            if reqCode == "FETCH":
+                newData = self.FetchAndUpdate()
+            elif reqCode == "KILL":
+                self.KillProcess(int(data))
+                newData = self.FetchAndUpdate()
+            elif reqCode == "START":
+                self.StartProcess(data)
+                newData = self.FetchAndUpdate()            
+            return HandlerState.SUCCEEDED, json.dumps(newData).encode("utf-8")
+
+        except Exception as e:
+            print(e)
+            return HandlerState.FAILED, None
 
     def FetchAndUpdate(self):
         self.processes = psutil.process_iter(['pid', 'name', 'num_threads'])
@@ -26,26 +41,17 @@ class ProcessHandler():
         return list_processes
 
     def KillProcess(self, id):
-        try:
-            to_kill = psutil.Process(id)
-            to_kill.kill()
-        except psutil.NoSuchProcess:
-            pass
+        to_kill = psutil.Process(id)
+        to_kill.kill()
 
     def StartProcess(self, name):
         process = name + ".exe"
-        try:
-            subprocess.Popen(process)
-        except FileNotFoundError:
-            print("File not found")
-        
+        subprocess.Popen(process)
 
 
 
 if __name__ == "__main__":
     a = ProcessHandler()
-    li = a.FetchAndUpdate()
-    for item in li:
-        print(item)
-
-    a.StartProcess("notepad")
+    state, m = a.Execute("FETCH", "")
+    print(state, m)
+    

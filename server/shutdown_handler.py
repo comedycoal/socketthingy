@@ -3,18 +3,15 @@ from handler_state import HandlerState
 
 class ShutdownHandler:
     def __init__(self):
-        # super().__init__()
         pass
 
-    def Shutdown(self):
-        #super().Handle()
-
+    def Execute(self, reqCode:str, data:str):
         try:
-            os.system("shutdown /s /t 3")
+            os.system("shutdown /s /t 3") 
+            return HandlerState.SUCCEEDED, None
         except:
-            return HandlerState.FAILED
+            return HandlerState.FAILED, None
 
-        return HandlerState.SUCCEEDED
     
 if __name__ == '__main__':
     a = ShutdownHandler()

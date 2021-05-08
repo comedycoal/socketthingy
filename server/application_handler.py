@@ -49,5 +49,5 @@ class ApplicationHandler(ProcessHandler):
 
 if __name__ == '__main__':
     a = ApplicationHandler()
-    print(a.FetchAndUpdate())
-    a.KillProcess(11360)
+    state, m = a.Execute("FETCH", "")
+    print(m)

