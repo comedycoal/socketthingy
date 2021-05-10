@@ -88,7 +88,7 @@ class ServerProgram:
         if request == "FINISH":
             if self.currHandler:
                 self.currHandler = None
-                state = HandlerState.INVALID
+                state = HandlerState.SUCCEEDED
             else:
                 self.SendMessage("INVALID", None)
         elif request == "EXIT":

@@ -36,11 +36,8 @@ class ProcessHandler():
     def FetchWithPIDs(self, pids):
         list_processes = []
         for pid in pids:
-            try:
-                pr = psutil.Process(pid)
-                list_processes.append(pr.as_dict(['pid', 'name', 'num_threads']))
-            except psutil.NoSuchProcess:
-                pass
+            pr = psutil.Process(pid)
+            list_processes.append(pr.as_dict(['pid', 'name', 'num_threads']))
         return list_processes
 
     def KillProcess(self, id):

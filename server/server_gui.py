@@ -7,8 +7,8 @@ PORT = 6666
 BACKLOG = 10
 
 def func():
-    program = server.ServerProgram(HOST, PORT, BACKLOG)
-    program.Run()
+    program = server.ServerProgram()
+    program.OpenServer()
 
 tmp = tk.Tk()
 tmp.title("Server")

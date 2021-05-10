@@ -1,14 +1,21 @@
 import tkinter
 import client
-import ProcessRunning_gui
-import AppRunning_gui
-import Keystroke_gui
-import ScreenCapture_gui
+from ProcessRunning_gui import ProcessRunning
+from AppRunning_gui import AppRunning
+from Keystroke_gui import Keystroke
+from Registry_gui import Registry
+from ScreenCapture_gui import Screenshot
 
 def remove_text(event):
     event.widget.delete(0, "end")
 
-program = None
+program = client.ClientProgram()
+process_gui = ProcessRunning()
+app_gui = AppRunning()
+keystroke_gui = Keystroke()
+registry_gui = Registry()
+screenshot_gui = Screenshot()
+
 
 def send():
     if not program:
@@ -33,9 +40,7 @@ def tmp4():
 
 def connect():
     host = textbox.get()
-    port = 6666
-    program = client.ClientProgram(host, port)
-    #program.Run()
+    program.Connect(host)
 
 def tmp6():
     print('thu 6')
@@ -54,22 +59,22 @@ if __name__ == "__main__":
     clientgui_button1 = tkinter.Button(clientgui, text = 'Kết nối', bg = 'lightgray', command = connect)
     clientgui_button1.place(x = 320, y = 20, height = 25, width = 120)
 
-    clientgui_button2 = tkinter.Button(clientgui, text = 'Process Running', wraplength = 60, command = ProcessRunning_gui.process)
+    clientgui_button2 = tkinter.Button(clientgui, text = 'Process Running', wraplength = 60, command = process_gui.process)
     clientgui_button2.place(x = 10, y = 65, height = 300, width = 100)
 
-    clientgui_button3 = tkinter.Button(clientgui, text = 'App Running', command = AppRunning_gui.appRunning)
+    clientgui_button3 = tkinter.Button(clientgui, text = 'App Running', command = app_gui.application)
     clientgui_button3.place(x = 120, y = 65, height = 100, width = 190)
 
-    clientgui_button4 = tkinter.Button(clientgui, text = 'Tắt máy', wraplength = 30, command = tmp3)
+    clientgui_button4 = tkinter.Button(clientgui, text = 'Tắt máy', wraplength = 30, command = tmp4)
     clientgui_button4.place(x = 120, y = 175, height = 80, width = 70)
 
-    clientgui_button5 = tkinter.Button(clientgui, text = 'Chụp màn hình', command = ScreenCapture_gui.pic)
+    clientgui_button5 = tkinter.Button(clientgui, text = 'Chụp màn hình', command = screenshot_gui.pic)
     clientgui_button5.place(x = 200, y = 175, height = 80, width = 110)
 
-    clientgui_button6 = tkinter.Button(clientgui, text = 'Sửa registry', command = tmp3)
+    clientgui_button6 = tkinter.Button(clientgui, text = 'Sửa registry', command = registry_gui.registry)
     clientgui_button6.place(x = 120, y = 265, height = 100, width = 250)
 
-    clientgui_button7 = tkinter.Button(clientgui, text = 'Keystroke', command = Keystroke_gui.keystroke)
+    clientgui_button7 = tkinter.Button(clientgui, text = 'Keystroke', command = keystroke_gui.keystroke)
     clientgui_button7.place(x = 320, y = 65, height = 190, width = 120)
 
     clientgui_button8 = tkinter.Button(clientgui, text = 'Thoát', command = clientgui.destroy)

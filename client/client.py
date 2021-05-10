@@ -16,6 +16,13 @@ class ClientState(Enum):
     BADMESSAGE = 3
 
 class ClientProgram:
+    States = {
+        "SUCCEEDED": ClientState.SUCCEEDED,
+        "FAILED": ClientState.FAILED,
+        "INVALID": ClientState.INVALID,
+        "BADMESSAGE": ClientState.BADMESSAGE,
+    }
+
     def __init__(self):
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.connected = False
@@ -54,14 +61,7 @@ class ClientProgram:
         # Hold for DONE
         reply = self.ReceiveMessage()
         state, rawdata = self.ProcessReply(reply)
-        if state == "SUCCEEDED":
-            return ClientState.SUCCEEDED, rawdata
-        elif state == "FAILED":
-            return ClientState.FAILED, None
-        elif state == "INVALID":
-            return ClientState.INVALID, None
-        elif state == "BADMESSAGE":
-            return ClientState.BADMESSAGE, None
+        return ClientProgram.States[state], rawdata if rawdata else None
             
     def SendMessage(self, string):
         req = string.encode(FORMAT)
