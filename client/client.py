@@ -1,6 +1,7 @@
 # The main program
 import socket
 import time
+from enum import Enum
 
 HEADER = 64
 FORMAT = "utf-8"
@@ -8,10 +9,16 @@ FORMAT = "utf-8"
 HOST = "127.0.0.1"
 PORT = 6666
 
+class ClientState(Enum):
+    SUCCEEDED = 0,
+    FAILED = 1,
+    INVALID = 2,
+    BADMESSAGE = 3
+
 class ClientProgram:
-    def __init__(self, host, port):
+    def __init__(self):
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.sock.connect((host, port))
+        self.connected = False
         self.requestID = 0
         
     def __del__(self):
@@ -21,24 +28,41 @@ class ClientProgram:
         a = 0
         while True:
             a += 1
-            self.MakeRequest("PROCESS")
-            print(self.requestID)
-            time.sleep(3)
-            if a == 3:
+            req = input("Enter request:")
+            state, data = self.MakeRequest(req)
+            m = 0
+            if data:
+                m = len(data)
+            print(state, m)
+            if req == "EXIT" and state == ClientState.SUCCEEDED:
                 break
+    
+    def Connect(self, host=HOST, port=PORT):
+        self.sock.connect((host, port))
+        self.requestID = 0
+        pass
 
+    def Disconnect(self):
+        self.connected = False
+        self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        pass
 
     def MakeRequest(self, request):
         self.requestID += 1
         # Send message
         self.SendMessage(request)   
         # Hold for DONE
-        while True:
-            reply = self.ReceiveMessage()
-            if reply == "DONE" or reply == "INVALID":
-                break
-
-
+        reply = self.ReceiveMessage()
+        state, rawdata = self.ProcessReply(reply)
+        if state == "SUCCEEDED":
+            return ClientState.SUCCEEDED, rawdata
+        elif state == "FAILED":
+            return ClientState.FAILED, None
+        elif state == "INVALID":
+            return ClientState.INVALID, None
+        elif state == "BADMESSAGE":
+            return ClientState.BADMESSAGE, None
+            
     def SendMessage(self, string):
         req = string.encode(FORMAT)
         length = len(req)
@@ -51,11 +75,25 @@ class ClientProgram:
         message_length = self.sock.recv(HEADER).decode(FORMAT)
         if message_length:
             length = int(message_length)
-            message = self.sock.recv(length).decode(FORMAT)
+            message = self.sock.recv(length)
             return message
         return None
 
+    def ProcessReply(self, reply):
+        try:
+            splitted = reply.split(b' ',1)
+            state = splitted[0].decode(FORMAT)
+            rawdata = None
+            if len(splitted) == 2:
+                rawdata = splitted[1]
+            return state, rawdata
+
+        except Exception as e:
+            return "BADMESSAGE", None
+            pass
+
 
 if __name__ == '__main__':
-    program = ClientProgram(HOST, PORT)
+    program = ClientProgram()
+    program.Connect()
     program.Run()

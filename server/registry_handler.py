@@ -23,7 +23,7 @@ class RegistryHandler:
         pass
 
     def Execute(self, reqCode:str, data:str):
-        #try:
+        try:
             extraData = ""
             if reqCode == "REGFILE":
                 with open(TEMP_PATH, "w") as file:
@@ -62,6 +62,8 @@ class RegistryHandler:
                 a = data.split(' ', 1)
                 assert len(a) == 2
                 extraData = self.DeleteValue(a[0], a[1])
+            else:
+                return HandlerState.INVALID, None
 
             if type(extraData) is bytes:
                 extraData = extraData.hex()
@@ -69,7 +71,7 @@ class RegistryHandler:
                 extraData = str(extraData)
 
             return HandlerState.SUCCEEDED, extraData.encode('utf-8')
-        #except Exception as e:
+        except Exception as e:
             print(e)
             return HandlerState.FAILED, None
 

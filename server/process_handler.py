@@ -10,6 +10,7 @@ class ProcessHandler():
 
     def Execute(self, reqCode:str, data:str):
         try:
+            print(reqCode)
             newData = None
             if reqCode == "FETCH":
                 newData = self.FetchAndUpdate()
@@ -18,7 +19,9 @@ class ProcessHandler():
                 newData = self.FetchAndUpdate()
             elif reqCode == "START":
                 self.StartProcess(data)
-                newData = self.FetchAndUpdate()            
+                newData = self.FetchAndUpdate()
+            else:
+                return HandlerState.INVALID, None          
             return HandlerState.SUCCEEDED, json.dumps(newData).encode("utf-8")
 
         except Exception as e:
