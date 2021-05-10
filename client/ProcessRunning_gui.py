@@ -1,18 +1,26 @@
 import tkinter
 import tkinter.ttk as ttk
+from client import ClientProgram
+
+client_sv = ClientProgram()
 
 def remove_text(event):
         event.widget.delete(0, "end")
 
 class ProcessRunning:
 
-    def on_kill(self):
+    def __init__(self):
+        pass
+
+    def on_kill(self, id):
         self.on_kill = tkinter.Tk()
         self.on_kill.title("")
         self.on_kill.geometry("250x100")
 
-        self.text = tkinter.Label(self.on_kill, text = 'Không tìm thấy process').place(x = 20, y = 20)
-        self.text = tkinter.Label(self.on_kill, text = 'Đã diệt process').place(x = 20, y = 20)
+        if client_sv.MakeRequest():
+            self.text = tkinter.Label(self.on_kill, text = 'Đã diệt process').place(x = 20, y = 20)
+        else:
+            self.text = tkinter.Label(self.on_kill, text = 'Không tìm thấy process').place(x = 20, y = 20)
 
         self.on_kill_button = tkinter.Button(self.on_kill, command = self.on_kill.destroy, text = 'OK').place (x = 100, y = 50)
         
@@ -27,12 +35,14 @@ class ProcessRunning:
         self.kill_textbox.insert(0, "Nhập ID")
         self.kill_textbox.bind("<Button-1>", remove_text)
         self.kill_textbox.place(x = 15, y = 15, height = 25, width = 150)
-
+        self.id = self.kill_textbox.get()
         self.kill_button = tkinter.Button(self.kill, text = "Kill", command = self.on_kill).place(x = 180, y = 15, height = 25, width = 60)
 
         self.kill.mainloop()
 
     def view(self):
+        for item in self.process_tree.get_children():
+            self.process_tree.delete(item)
         for item in itemlist:
             self.process_tree.insert('', 'end', values = item)
 
@@ -73,7 +83,7 @@ class ProcessRunning:
 
         self.process.geometry("470x400")
         
-        self.process_tree = ttk.Treeview(columns = ('Name Process', 'ID Process', 'Count Thread'), show = 'headings')
+        self.process_tree = ttk.Treeview(self.process, columns = ('Name Process', 'ID Process', 'Count Thread'), show = 'headings')
         self.process_tree.heading('Name Process', text = "Name Process")
         self.process_tree.column("Name Process", width = 140)
         self.process_tree.heading('ID Process', text = "ID Process")

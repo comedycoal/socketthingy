@@ -48,7 +48,7 @@ class AppRunning:
 
         self.listApp.geometry("470x400")
         
-        self.listApp_tree = ttk.Treeview(columns = ('Name Application', 'ID Application', 'Count Thread'), show = 'headings')
+        self.listApp_tree = ttk.Treeview(self.listApp, columns = ('Name Application', 'ID Application', 'Count Thread'), show = 'headings')
         self.listApp_tree.heading('Name Application', text = "Name Application")
         self.listApp_tree.column("Name Application", width = 140)
         self.listApp_tree.heading('ID Application', text = "ID Application")
