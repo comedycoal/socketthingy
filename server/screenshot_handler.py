@@ -25,4 +25,5 @@ class ScreenshotHandler():
 if __name__ == "__main__":
     a = ScreenshotHandler()
     m, n = a.Execute("", "")
+    Image.frombytes("RGBA", (1920, 1080), n)
     

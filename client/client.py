@@ -1,12 +1,14 @@
 # The main program
 import socket
 import time
+import PIL
+from PIL import Image
 from enum import Enum
 
 HEADER = 64
 FORMAT = "utf-8"
 
-HOST = "127.0.0.1"
+HOST = "192.168.1.10"
 PORT = 6666
 
 class ClientState(Enum):
@@ -38,8 +40,18 @@ class ClientProgram:
             req = input("Enter request:")
             state, data = self.MakeRequest(req)
             m = 0
+            if req == "SCREENSHOT":
+                s = data.split(b' ', 2)
+                w = int(s[0])
+                h = int(s[1])
+                print(w, h)
+                print(len(s[2]))
+                image = Image.frombytes("RGB", (w, h), s[2])
+                file = image.save("file.png")
+                image.close()
             if data:
                 m = len(data)
+    
             print(state, m)
             if req == "EXIT" and state == ClientState.SUCCEEDED:
                 break
