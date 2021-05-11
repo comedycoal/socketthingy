@@ -1,6 +1,6 @@
 # The main program
 import socket
-import time
+from tkinter.constants import E, TRUE
 from enum import Enum
 
 HEADER = 64
@@ -13,7 +13,9 @@ class ClientState(Enum):
     SUCCEEDED = 0,
     FAILED = 1,
     INVALID = 2,
-    BADMESSAGE = 3
+    BADMESSAGE = 3,
+    NOCONNECTION = 4,
+    BADCONNECTION = 5
 
 class ClientProgram:
     States = {
@@ -21,6 +23,8 @@ class ClientProgram:
         "FAILED": ClientState.FAILED,
         "INVALID": ClientState.INVALID,
         "BADMESSAGE": ClientState.BADMESSAGE,
+        "NOCONNECTION": ClientState.NOCONNECTION,
+        "BADCONNECTION": ClientState.BADCONNECTION
     }
 
     def __init__(self):
@@ -32,6 +36,11 @@ class ClientProgram:
         self.sock.close()
 
     def Run(self):
+        try:
+            assert self.connected, "No connection is made"
+        except AssertionError as e: 
+            print(e)
+            return
         a = 0
         while True:
             a += 1
@@ -45,9 +54,14 @@ class ClientProgram:
                 break
     
     def Connect(self, host=HOST, port=PORT):
-        self.sock.connect((host, port))
-        self.requestID = 0
-        pass
+        try:
+            self.sock.connect((host, port))
+            self.requestID = 0
+            self.connected = True
+            return True
+        except Exception as e:
+            print(e)
+            return False
 
     def Disconnect(self):
         self.connected = False
@@ -55,29 +69,53 @@ class ClientProgram:
         pass
 
     def MakeRequest(self, request):
+        try:
+            assert self.connected, "No connection established"
+        except Exception as e:
+            print(e)
+            return ClientState.NOCONNECTION, None
+
         self.requestID += 1
         # Send message
-        self.SendMessage(request)   
+        status = self.SendMessage(request) 
+        if not status:
+            #Connection is faulty, quit
+            return ClientState.BADCONNECTION, None
         # Hold for DONE
+
         reply = self.ReceiveMessage()
         state, rawdata = self.ProcessReply(reply)
         return ClientProgram.States[state], rawdata if rawdata else None
             
     def SendMessage(self, string):
-        req = string.encode(FORMAT)
-        length = len(req)
-        length = str(length).encode(FORMAT)
-        length += b' ' * (HEADER - len(length))
-        bytes_sent = self.sock.send(length)
-        self.sock.send(req)
+        try:
+            req = string.encode(FORMAT)
+            length = len(req)
+            length = str(length).encode(FORMAT)
+            length += b' ' * (HEADER - len(length))
+            bytes_sent = self.sock.send(length)
+            assert bytes_sent == length, "Length of sent message does not match that of the actual message"
+            self.sock.send(req)
+
+            return True
+        except OSError as e:
+            print(e)
+            return False
+        except AssertionError as e:
+            print(e)
+            return False
 
     def ReceiveMessage(self):
-        message_length = self.sock.recv(HEADER).decode(FORMAT)
-        if message_length:
-            length = int(message_length)
-            message = self.sock.recv(length)
-            return message
-        return None
+        try:
+            message_length = self.sock.recv(HEADER).decode(FORMAT)
+            if message_length:
+                length = int(message_length)
+                message = self.sock.recv(length)
+                return message
+            return None
+        except Exception as e:
+            print(e)
+            return None
 
     def ProcessReply(self, reply):
         try:
@@ -90,7 +128,6 @@ class ClientProgram:
 
         except Exception as e:
             return "BADMESSAGE", None
-            pass
 
 
 if __name__ == '__main__':
