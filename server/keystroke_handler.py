@@ -74,8 +74,6 @@ class Logger:
         Logger.tempBuffer = ""
         pass
 
-threadID = wintypes.DWORD()
-
 class KBDLLHOOKSTRUCT(ctypes.Structure):
     _fields_ = [("vkCode", wintypes.DWORD),
                 ("scanCode", wintypes.DWORD),
@@ -123,17 +121,19 @@ def InstallHookAndLoop(lpParameter):
 
 def StartThread(function):
     func = LPTHREAD_START_ROUTINE(function)
+    threadID = wintypes.DWORD()
     handle = wintypes.HANDLE(windll.kernel32.CreateThread(None, 0, func, wintypes.LPVOID(0), 0, ctypes.byref(threadID)))
 
     if handle:
         windll.kernel32.WaitForSingleObject(handle, 1)
 
-    return handle
+    return handle, threadID
 
 class KeystrokeHandler:
     def __init__(self, filepath):
         global globalFile
         self.threadHandle = None
+        self.threadID = wintypes.DWORD()
         self.hooked = False
         Logger.Init(filepath)
         pass
@@ -161,13 +161,12 @@ class KeystrokeHandler:
             return HandlerState.FAILED, None
 
     def Hook(self):
-        self.threadHandle = StartThread(InstallHookAndLoop)
+        self.threadHandle, self.threadID = StartThread(InstallHookAndLoop)
         self.hooked = True
 
     def Unhook(self):
-        global threadID
-        if (windll.user32.PostThreadMessageA(threadID, WM_QUIT, None, None)):
-            threadID = wintypes.DWORD()
+        if (windll.user32.PostThreadMessageA(self.threadID, WM_QUIT, None, None)):
+            self.threadID = wintypes.DWORD()
             self.hooked = False
         else:
             raise OSError("Quit message is not posted")
@@ -181,7 +180,7 @@ if __name__ == "__main__":
     from pathlib import Path
     import os
     import time
-    a = KeystrokeHandler()
+    a = KeystrokeHandler("temp.txt")
     handle = StartThread(InstallHookAndLoop)
     input("b: ")
     print(Logger.Read())
