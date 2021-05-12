@@ -12,17 +12,37 @@ class Screenshot(Request):
         super().__init__(client, "SCREENSHOT")
         self.capturedScreen = None
 
-    def BytesToImage(self, bytesData:bytes):
-        #để t handle
-        pass
-
     def OnStartGUI(self):
         state = self.CapScreen()
 
         self.ShowWindow()
 
     def OnExitGUI(self):
+        if self.MainWindow:
+           self.MainWindow.destroy()
         pass
+    
+    def ShowWindow(self):
+        self.MainWindow = tkinter.Tk()
+        self.MainWindow.geometry("500x420")
+        self.MainWindow.title("pic")
+
+        pic_canvas = tkinter.Canvas(self.MainWindow)
+        pic_canvas.place(x = 15, y = 25, height = 380, width = 380)
+
+        pic_button1 = tkinter.Button(self.MainWindow, text = "Chụp", command = self.CapScreen)
+        pic_button1.place(x = 400, y = 25 , height = 260, width = 90)
+
+        pic_button2 = tkinter.Button(self.MainWindow, text = "Lưu", command = self.SavePic)
+        pic_button2.place(x = 400, y = 310 , height = 95, width = 90)
+
+        self.MainWindow.protocol('WM_DELETE_WINDOW', self.OnExitGUI)
+        self.MainWindow.mainloop()
+
+    def BytesToImage(self, bytesData:bytes):
+        #để t handle
+        pass
+
 
     def CapScreen(self):
         state, rawdata = self.MakeBaseRequest()
@@ -40,19 +60,3 @@ class Screenshot(Request):
     def SavePic(self):
         # Làm cái lưu hình đi :v
         pass
-
-    def ShowWindow(self):
-        self.mainWindow = tkinter.Tk()
-        self.mainWindow.geometry("500x420")
-        self.mainWindow.title("pic")
-
-        pic_canvas = tkinter.Canvas(self.mainWindow)
-        pic_canvas.place(x = 15, y = 25, height = 380, width = 380)
-
-        pic_button1 = tkinter.Button(self.mainWindow, text = "Chụp", command = self.CapScreen)
-        pic_button1.place(x = 400, y = 25 , height = 260, width = 90)
-
-        pic_button2 = tkinter.Button(self.mainWindow, text = "Lưu", command = self.SavePic)
-        pic_button2.place(x = 400, y = 310 , height = 95, width = 90)
-
-        self.mainWindow.mainloop()

@@ -11,29 +11,28 @@ class Keystroke(Request):
         super().__init__(client, "KEYLOG")
 
     def ShowWindow(self):
-        self.mainWaindow = tkinter.Tk()
-        self.mainWaindow.title("Keystroke")
+        self.MainWindow = tkinter.Tk()
+        self.MainWindow.title("Keystroke")
 
-        self.mainWaindow.geometry("470x400")
+        self.MainWindow.geometry("470x400")
         
-        self.keystroke_listbox = tkinter.Listbox(self.mainWaindow)
+        self.keystroke_listbox = tkinter.Listbox(self.MainWindow)
         self.keystroke_listbox.place(x = 30 , y = 80, height = 300, width = 420)
 
-        self.HookButton = tkinter.Button(self.mainWaindow, text = 'Hook', command = self.OnHookButton)
+        self.HookButton = tkinter.Button(self.MainWindow, text = 'Hook', command = self.OnHookButton)
         self.HookButton.place(x = 30, y = 10, height = 60, width = 100)
 
-        self.UnHookButton = tkinter.Button(self.mainWaindow, text = 'Unhook', command = self.OnUnhookButton)
+        self.UnHookButton = tkinter.Button(self.MainWindow, text = 'Unhook', command = self.OnUnhookButton)
         self.UnHookButton.place(x = 140, y = 10, height = 60, width = 90)
 
-        self.PrintButton = tkinter.Button(self.mainWaindow, text = 'In phím', command = self.OnPrintButton)
+        self.PrintButton = tkinter.Button(self.MainWindow, text = 'In phím', command = self.OnPrintButton)
         self.PrintButton.place(x = 240, y = 10, height = 60, width = 100)
 
-        self.ClaerButton = tkinter.Button(self.mainWaindow, text = 'Xóa', command = self.OnClearButton)
+        self.ClaerButton = tkinter.Button(self.MainWindow, text = 'Xóa', command = self.OnClearButton)
         self.ClaerButton.place(x = 350, y = 10, height = 60, width = 100)
 
-        self.mainWaindow.protocol('WM_DELETE_WINDOW', self.OnExitGUI)
-
-        self.mainWaindow.mainloop()
+        self.MainWindow.protocol('WM_DELETE_WINDOW', self.OnExitGUI)
+        self.MainWindow.mainloop()
 
     def OnHookButton(self):
         state, _ = self.client.MakeRequest("HOOK")

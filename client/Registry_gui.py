@@ -11,39 +11,39 @@ class Registry(Request):
         super().__init__(client, "REGISTRY")
 
     def ShowWindow(self):
-        self.mainWindow = tkinter.Tk()
-        self.mainWindow.title("Registry")
+        self.MainWindow = tkinter.Tk()
+        self.MainWindow.title("Registry")
 
-        self.mainWindow.geometry("500x500")
+        self.MainWindow.geometry("500x500")
         
         # Phần file registry
-        self.regFilePathInputBox = tkinter.Entry(self.mainWindow)
+        self.regFilePathInputBox = tkinter.Entry(self.MainWindow)
         self.regFilePathInputBox.insert(0, "Đường dẫn…")
         self.regFilePathInputBox.bind("<Button-1>", remove_text)
         self.regFilePathInputBox.place(x = 10, y = 20, height = 30, width = 380)
 
-        self.browseButton = tkinter.Button(self.mainWindow, text = 'Browse...', command = self.Browse)
+        self.browseButton = tkinter.Button(self.MainWindow, text = 'Browse...', command = self.Browse)
         self.browseButton.place(x = 400, y = 20, height = 30, width = 90)
 
-        self.regFileContent = tkinter.Listbox(self.mainWindow)
+        self.regFileContent = tkinter.Listbox(self.MainWindow)
         self.regFileContent.insert(0, "Nội dung")
         self.regFileContent.bind("<Button-1>", remove_text)
         self.regFileContent.place(x = 10 , y = 60, height = 100, width = 380)
-        regFileContent_scrollbar = tkinter.Scrollbar(self.mainWindow)
+        regFileContent_scrollbar = tkinter.Scrollbar(self.MainWindow)
         self.regFileContent.config(yscrollcommand = regFileContent_scrollbar.set)
         regFileContent_scrollbar.config(command = self.regFileContent.yview)
 
-        self.sendRegFileButton = tkinter.Button(self.mainWindow, text = 'Gởi nội dung', command = self.OnFileRegContentSend)
+        self.sendRegFileButton = tkinter.Button(self.MainWindow, text = 'Gởi nội dung', command = self.OnFileRegContentSend)
         self.sendRegFileButton.place(x = 400, y = 60, height = 100, width = 90)
 
         # Phân gửi trực tiếp
-        self.directChangeFrame = tkinter.Frame(self.mainWindow, highlightbackground = "grey", bd = 1, highlightthickness = 0.5)
+        self.directChangeFrame = tkinter.Frame(self.MainWindow, highlightbackground = "grey", bd = 1, highlightthickness = 0.5)
         self.directChangeFrame.place(x = 10, y = 180, height = 300, width = 480)
 
-        self.directChangeFrameName = tkinter.Label(self.mainWindow, text = 'Sửa giá trị trực tiếp')
+        self.directChangeFrameName = tkinter.Label(self.MainWindow, text = 'Sửa giá trị trực tiếp')
         self.directChangeFrameName.place(x = 20, y = 170, height = 20)
 
-        self.registry_entry2 = tkinter.Entry(self.mainWindow)
+        self.registry_entry2 = tkinter.Entry(self.MainWindow)
         self.registry_entry2.insert(0, "Chọn chức năng")
         # self.registry_entry2.bind("<Button-1>", remove_text)
         self.registry_entry2.place(x = 20, y = 200, height = 20, width = 460)
@@ -54,7 +54,7 @@ class Registry(Request):
         # self.registry_button2 = tkinter.Menubutton()
         # self.registry_button2.place(x = 400, y = 20, height = 30, width = 90)
 
-        self.registry_entry3 = tkinter.Entry(self.mainWindow)
+        self.registry_entry3 = tkinter.Entry(self.MainWindow)
         self.registry_entry3.insert(0, "Đường dẫn")
         self.registry_entry3.bind("<Button-1>", remove_text)
         self.registry_entry3.place(x = 20, y = 200, height = 20, width = 460)
@@ -67,8 +67,9 @@ class Registry(Request):
 
         # self.registry_button4 = tkinter.Button(self.registry, text = 'Start', command = self.start)
         # self.registry_button4.place(x = 350, y = 10, height = 60, width = 100)
-
-        self.mainWindow.mainloop()
+        
+        self.MainWindow.protocol('WM_DELETE_WINDOW', self.OnExitGUI)
+        self.MainWindow.mainloop()
 
     def Browse(self):
         # Mở cửa số tìm file (chắc tkinter có lệnh chứ)
