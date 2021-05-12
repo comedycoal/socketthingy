@@ -1,87 +1,95 @@
 import tkinter
-import client
-from ProcessRunning_gui import ProcessRunning
-from AppRunning_gui import AppRunning
+from tkinter.messagebox import showinfo
+
+from client import ClientState
+from client import ClientProgram
+
+from ProcessRunning_gui import ProcessRunning, ApplicationRunning
 from Keystroke_gui import Keystroke
 from Registry_gui import Registry
 from ScreenCapture_gui import Screenshot
 
-def remove_text(event):
-    event.widget.delete(0, "end")
+# def remove_text(event):
+#     event.widget.delete(0, "end")
 
-program = client.ClientProgram()
-process_gui = ProcessRunning()
-app_gui = AppRunning()
-keystroke_gui = Keystroke()
-registry_gui = Registry()
-screenshot_gui = Screenshot()
-
-class ClientGUI:
-
-    def __init__(self):
+class ClientGUI():
+    def __init__(self):   
+        self.clientProgram = ClientProgram()
+        self.process_gui = ProcessRunning(self.clientProgram)
+        self.app_gui = ApplicationRunning(self.clientProgram)
+        self.keystroke_gui = Keystroke(self.clientProgram)
+        self.registry_gui = Registry(self.clientProgram)
+        self.screenshot_gui = Screenshot(self.clientProgram)
         pass
-    # def send():
-    #     if not program:
-    #         client.MakeRequest()
+
+    def Connect(self, host):
+        state = self.clientProgram.Connect(host)
+        if state == True:
+            showinfo(title = '', message = 'Kết nối đến server thành công')
+        else:
+            showinfo(title = '', message = 'Lỗi kết nối đến server')
+
+    def Disconnect(self):
+        state = self.clientProgram.Disconnect()
+        # handle error?
+
+    def OnShutdownButton(self):
+        state, _ = self.clientProgram.MakeRequest("SHUTDOWN")
+        if state == ClientState.SUCCEEDED:
+            # Bên server chuẩn bị tắt máy thì client mình làm gì nhỉ
+            pass
+        else:
+            #Handle, in không thể liên lạc với server chẳng hạn
+            pass
+
+    def OnExitButton(self):
+        # Ngắt kết nối
+        state, _ = self.clientProgram.MakeRequest("EXIT")
+        if state == ClientState.SUCCEEDED:
+            self.Disconnect()
+            pass
+        else:
+            
+            pass
+        self.MainWindow.destroy()
+
+    def ShowWindow(self):
+        self.MainWindow = tkinter.Tk()
+        self.MainWindow.title("Client")
+
+        self.MainWindow.geometry("470x400")
+
+        IPBox = tkinter.Entry(self.MainWindow)
+        IPBox.insert(0, "Nhập IP")
+        # self.clientgui_textbox.bind("<Button-1>", remove_text)
+        IPBox.place(x = 10, y = 20, height = 25, width = 300)
         
+        clientgui_button1 = tkinter.Button(self.MainWindow, text = 'Kết nối', command = lambda: self.Connect(IPBox.get()))
+        clientgui_button1.place(x = 320, y = 20, height = 25, width = 120)
 
-    def check_connection(self):
-        self.check_connection = tkinter.Tk()
-        self.check_connection.geometry("250x100")
-        self.check_connection.title("")
+        clientgui_button2 = tkinter.Button(self.MainWindow, text = 'Process Running', wraplength = 60, command = self.process_gui.OnStartGUI)
+        clientgui_button2.place(x = 10, y = 65, height = 300, width = 100)
 
-        self.text = tkinter.Label(self.check_connection, text = 'Chưa kết nối đến server').place(x = 20, y = 20)
-        self.text = tkinter.Label(self.check_connection, text = 'Lỗi kết nối đến server').place(x = 20, y = 20)
-        self.text = tkinter.Label(self.check_connection, text = 'Kết nối đến server thành công').place(x = 20, y = 20)
+        clientgui_button3 = tkinter.Button(self.MainWindow, text = 'App Running', command = self.app_gui.OnStartGUI)
+        clientgui_button3.place(x = 120, y = 65, height = 100, width = 190)
 
-        self.button = tkinter.Button(self.check_connection, command = self.check_connection.destroy, text = 'OK').place (x = 100, y = 50)
-        self.check_connection.mainloop()
+        clientgui_button4 = tkinter.Button(self.MainWindow, text = 'Tắt máy', wraplength = 30, command = self.OnShutdownButton)
+        clientgui_button4.place(x = 120, y = 175, height = 80, width = 70)
 
+        clientgui_button5 = tkinter.Button(self.MainWindow, text = 'Chụp màn hình', command = self.screenshot_gui.OnStartGUI)
+        clientgui_button5.place(x = 200, y = 175, height = 80, width = 110)
 
-    def tmp4(self):
-        print('thu 4')
+        clientgui_button6 = tkinter.Button(self.MainWindow, text = 'Sửa registry', command = self.registry_gui.OnStartGUI)
+        clientgui_button6.place(x = 120, y = 265, height = 100, width = 250)
 
-    def connect(self):
-        host = self.clientgui_textbox.get()
-        program.Connect(host)
+        clientgui_button7 = tkinter.Button(self.MainWindow, text = 'Keystroke', command = self.keystroke_gui.OnStartGUI)
+        clientgui_button7.place(x = 320, y = 65, height = 190, width = 120)
 
-    def clientGUI(self):
-        self.clientgui = tkinter.Tk()
-        self.clientgui.title("Client")
+        clientgui_button8 = tkinter.Button(self.MainWindow, text = 'Thoát', command = self.OnExitButton)
+        clientgui_button8.place(x = 380, y = 265, height = 100, width = 60)
 
-        self.clientgui.geometry("470x400")
-
-        self.clientgui_textbox = tkinter.Entry(self.clientgui)
-        self.clientgui_textbox.insert(0, "Nhập IP")
-        self.clientgui_textbox.bind("<Button-1>", remove_text)
-        self.clientgui_textbox.place(x = 10, y = 20, height = 25, width = 300)
-        
-        self.clientgui_button1 = tkinter.Button(self.clientgui, text = 'Kết nối', bg = 'lightgray', command = self.connect)
-        self.clientgui_button1.place(x = 320, y = 20, height = 25, width = 120)
-
-        self.clientgui_button2 = tkinter.Button(self.clientgui, text = 'Process Running', wraplength = 60, command = process_gui.process)
-        self.clientgui_button2.place(x = 10, y = 65, height = 300, width = 100)
-
-        self.clientgui_button3 = tkinter.Button(self.clientgui, text = 'App Running', command = app_gui.application)
-        self.clientgui_button3.place(x = 120, y = 65, height = 100, width = 190)
-
-        self.clientgui_button4 = tkinter.Button(self.clientgui, text = 'Tắt máy', wraplength = 30, command = self.tmp4)
-        self.clientgui_button4.place(x = 120, y = 175, height = 80, width = 70)
-
-        self.clientgui_button5 = tkinter.Button(self.clientgui, text = 'Chụp màn hình', command = screenshot_gui.pic)
-        self.clientgui_button5.place(x = 200, y = 175, height = 80, width = 110)
-
-        self.clientgui_button6 = tkinter.Button(self.clientgui, text = 'Sửa registry', command = registry_gui.registry)
-        self.clientgui_button6.place(x = 120, y = 265, height = 100, width = 250)
-
-        self.clientgui_button7 = tkinter.Button(self.clientgui, text = 'Keystroke', command = keystroke_gui.keystroke)
-        self.clientgui_button7.place(x = 320, y = 65, height = 190, width = 120)
-
-        self.clientgui_button8 = tkinter.Button(self.clientgui, text = 'Thoát', command = self.clientgui.destroy)
-        self.clientgui_button8.place(x = 380, y = 265, height = 100, width = 60)
-
-        self.clientgui.mainloop()
+        self.MainWindow.mainloop()
 
 if __name__ == '__main__':
     a = ClientGUI()
-    a.clientGUI()
+    a.ShowWindow()

@@ -4,7 +4,7 @@ import subprocess
 import os
 from pathlib import Path
 
-TEMP_PATH = "temp.reg"
+TEMP_PATH = FILE_PATH = os.path.join(Path(__file__).parent.absolute(),"temp\\tempreg.reg")
 
 def StringToBytes(string):
     return bytes([int(i) for i in string])

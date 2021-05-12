@@ -15,4 +15,4 @@ class ShutdownHandler:
     
 if __name__ == '__main__':
     a = ShutdownHandler()
-    a.Handle()
+    a.Execute()

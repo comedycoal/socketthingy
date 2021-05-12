@@ -85,17 +85,24 @@ class ClientProgram:
 
         reply = self.ReceiveMessage()
         state, rawdata = self.ProcessReply(reply)
+        print(state, len(rawdata) if rawdata else None)
         return ClientProgram.States[state], rawdata if rawdata else None
             
-    def SendMessage(self, string):
+    def SendMessage(self, string, binaryData=None):
         try:
             req = string.encode(FORMAT)
+            if binaryData:
+                req += b' ' + binaryData
+                
             length = len(req)
-            length = str(length).encode(FORMAT)
-            length += b' ' * (HEADER - len(length))
-            bytes_sent = self.sock.send(length)
+            header = str(length).encode(FORMAT)
+            header += b' ' * (HEADER - len(header))
+
+            bytes_sent = self.sock.send(header)
+            assert bytes_sent == HEADER, "Length of sent message does not match that of the actual message"
+            
+            bytes_sent = self.sock.send(req)
             assert bytes_sent == length, "Length of sent message does not match that of the actual message"
-            self.sock.send(req)
 
             return True
         except OSError as e:

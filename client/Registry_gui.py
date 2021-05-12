@@ -1,72 +1,49 @@
 import tkinter
 
+from Request_gui import Request
+from client import ClientState
+
 def remove_text(event):
         event.widget.delete(0, "end")
 
-class Registry:
+class Registry(Request):
+    def __init__(self, client):
+        super().__init__(client, "REGISTRY")
 
-    def __init__(self):
-        pass
+    def ShowWindow(self):
+        self.mainWindow = tkinter.Tk()
+        self.mainWindow.title("Registry")
 
-    def browser(self):
-        print('browser')
-
-    def dosth(self):
-        for item in itemlist:
-            self.registry_tree.insert('', 'end', values = item)
-
-    def erase(self):
-        for item in self.registry_tree.get_children():
-            self.registry_tree.delete(item)
-
-    def start(self):
-        self.start = tkinter.Tk()
-        self.start.title("Start")
-        self.start.geometry("250x50")
-
-        self.start_textbox = tkinter.Entry(self.start)
-        self.start_textbox.insert(0, "Nhập tên")
-        self.start_textbox.bind("<Button-1>", remove_text)
-        self.start_textbox.place(x = 15, y = 15, height = 25, width = 150)
-
-        self.start_button = tkinter.Button(self.start, text = "Start").place(x = 180, y = 15, height = 25, width = 60)
-
-        self.start.mainloop()
-
-
-    def registry(self):
-        self.registry = tkinter.Tk()
-        self.registry.title("Registry")
-
-        self.registry.geometry("500x500")
+        self.mainWindow.geometry("500x500")
         
-        self.registry_entry1 = tkinter.Entry(self.registry)
-        self.registry_entry1.insert(0, "Đường dẫn…")
-        self.registry_entry1.bind("<Button-1>", remove_text)
-        self.registry_entry1.place(x = 10, y = 20, height = 30, width = 380)
+        # Phần file registry
+        self.regFilePathInputBox = tkinter.Entry(self.mainWindow)
+        self.regFilePathInputBox.insert(0, "Đường dẫn…")
+        self.regFilePathInputBox.bind("<Button-1>", remove_text)
+        self.regFilePathInputBox.place(x = 10, y = 20, height = 30, width = 380)
 
-        self.registry_button1 = tkinter.Button(self.registry, text = 'Browser...', command = self.browser)
-        self.registry_button1.place(x = 400, y = 20, height = 30, width = 90)
+        self.browseButton = tkinter.Button(self.mainWindow, text = 'Browse...', command = self.Browse)
+        self.browseButton.place(x = 400, y = 20, height = 30, width = 90)
 
-        self.registry_listbox1 = tkinter.Listbox(self.registry)
-        self.registry_listbox1.insert(0, "Nội dung")
-        self.registry_listbox1.bind("<Button-1>", remove_text)
-        self.registry_listbox1.place(x = 10 , y = 60, height = 100, width = 380)
-        self.listbox1_scrollbar = tkinter.Scrollbar(self.registry)
-        self.registry_listbox1.config(yscrollcommand = self.listbox1_scrollbar.set)
-        self.listbox1_scrollbar.config(command = self.registry_listbox1.yview)
+        self.regFileContent = tkinter.Listbox(self.mainWindow)
+        self.regFileContent.insert(0, "Nội dung")
+        self.regFileContent.bind("<Button-1>", remove_text)
+        self.regFileContent.place(x = 10 , y = 60, height = 100, width = 380)
+        regFileContent_scrollbar = tkinter.Scrollbar(self.mainWindow)
+        self.regFileContent.config(yscrollcommand = regFileContent_scrollbar.set)
+        regFileContent_scrollbar.config(command = self.regFileContent.yview)
 
-        self.registry_button2 = tkinter.Button(self.registry, text = 'Gởi nội dung', command = self.dosth)
-        self.registry_button2.place(x = 400, y = 60, height = 100, width = 90)
+        self.sendRegFileButton = tkinter.Button(self.mainWindow, text = 'Gởi nội dung', command = self.OnFileRegContentSend)
+        self.sendRegFileButton.place(x = 400, y = 60, height = 100, width = 90)
 
+        # Phân gửi trực tiếp
+        self.directChangeFrame = tkinter.Frame(self.mainWindow, highlightbackground = "grey", bd = 1, highlightthickness = 0.5)
+        self.directChangeFrame.place(x = 10, y = 180, height = 300, width = 480)
 
-        self.frame = tkinter.Frame(self.registry, highlightbackground = "grey", bd = 1, highlightthickness = 0.5)
-        self.frame.place(x = 10, y = 180, height = 300, width = 480)
+        self.directChangeFrameName = tkinter.Label(self.mainWindow, text = 'Sửa giá trị trực tiếp')
+        self.directChangeFrameName.place(x = 20, y = 170, height = 20)
 
-        self.framename = tkinter.Label(self.registry, text = 'Sửa giá trị trực tiếp')
-        self.framename.place(x = 20, y = 170, height = 20)
-
-        self.registry_entry2 = tkinter.Entry(self.registry)
+        self.registry_entry2 = tkinter.Entry(self.mainWindow)
         self.registry_entry2.insert(0, "Chọn chức năng")
         # self.registry_entry2.bind("<Button-1>", remove_text)
         self.registry_entry2.place(x = 20, y = 200, height = 20, width = 460)
@@ -77,7 +54,7 @@ class Registry:
         # self.registry_button2 = tkinter.Menubutton()
         # self.registry_button2.place(x = 400, y = 20, height = 30, width = 90)
 
-        self.registry_entry3 = tkinter.Entry(self.registry)
+        self.registry_entry3 = tkinter.Entry(self.mainWindow)
         self.registry_entry3.insert(0, "Đường dẫn")
         self.registry_entry3.bind("<Button-1>", remove_text)
         self.registry_entry3.place(x = 20, y = 200, height = 20, width = 460)
@@ -91,8 +68,41 @@ class Registry:
         # self.registry_button4 = tkinter.Button(self.registry, text = 'Start', command = self.start)
         # self.registry_button4.place(x = 350, y = 10, height = 60, width = 100)
 
-        self.registry.mainloop()
+        self.mainWindow.mainloop()
 
+    def Browse(self):
+        # Mở cửa số tìm file (chắc tkinter có lệnh chứ)
+        # Mở file đó bằng open
+        # đọc content vô s
+        # in s ra list_box của cửa sổ (self.regFileContent thì phải)
+        pass 
+
+    def OnFileRegContentSend(self):
+        # lấy nội dung của cái list_box (self.regFileConent thì phải), cho vô biến data
+        state, _ = self.client.MakeRequest("REGFILE " + data)
+        if state == ClientState.SUCCEEDED:
+            # In Thành công
+            pass
+        else:
+            # In thất bại
+            pass
+
+    # Sửa ở trên đi phần này t sửa cho
+
+    def RequestCreateKey(self, path):
+        pass
+
+    def RequestDeleteKey(self, path):
+        pass
+
+    def RequestGetValue(self, path, valuename):
+        pass
+
+    def RequestSetValue(self, path, valuename, type, value):
+        pass
+
+    def RequestDeleteValue(self, path, valuename):
+        pass
 
 
 itemlist = [
@@ -109,6 +119,6 @@ itemlist = [
 
 
 if __name__ == "__main__":
-    a = Registry()
-    a.registry()
+    a = Registry(None)
+    a.ShowWindow()
     

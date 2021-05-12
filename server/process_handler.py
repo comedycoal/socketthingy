@@ -53,5 +53,7 @@ class ProcessHandler():
 if __name__ == "__main__":
     a = ProcessHandler()
     state, m = a.Execute("FETCH", "")
-    print(state, m)
+    a = json.loads(m)
+    for i in a:
+        print(i)
     

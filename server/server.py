@@ -67,15 +67,29 @@ class ServerProgram:
             return rawmessage.decode(FORMAT)
         return None
 
-    def SendMessage(self, string, binaryData):
-        req = string.encode(FORMAT)
-        if binaryData:
-            req += b' ' + binaryData
-        length = len(req)
-        length = str(length).encode(FORMAT)
-        length += b' ' * (HEADER - len(length))
-        bytes_sent = self.clientSocket.send(length)
-        self.clientSocket.send(req)
+    def SendMessage(self, string, binaryData=None):
+        try:
+            req = string.encode(FORMAT)
+            if binaryData:
+                req += b' ' + binaryData
+
+            length = len(req)
+            header = str(length).encode(FORMAT)
+            header += b' ' * (HEADER - len(header))
+            
+            bytes_sent = self.clientSocket.send(header)
+            assert bytes_sent == HEADER, "Length of sent message does not match that of the actual message"
+                
+            bytes_sent = self.clientSocket.send(req)
+            assert bytes_sent == length, "Length of sent message does not match that of the actual message"
+
+            return True
+        except OSError as e:
+            print(e)
+            return False
+        except AssertionError as e:
+            print(e)
+            return False
 
     def HandleRequest(self, requestString):
         immediate = False
