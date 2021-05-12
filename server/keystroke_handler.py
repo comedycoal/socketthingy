@@ -161,12 +161,15 @@ class KeystrokeHandler:
             return HandlerState.FAILED, None
 
     def Hook(self):
+        assert not self.hooked, "A hook already exists"
         self.threadHandle, self.threadID = StartThread(InstallHookAndLoop)
         self.hooked = True
 
     def Unhook(self):
+        assert self.hooked, "No hook is installed"
         if (windll.user32.PostThreadMessageA(self.threadID, WM_QUIT, None, None)):
             self.threadID = wintypes.DWORD()
+            self.threadHandle = None
             self.hooked = False
         else:
             raise OSError("Quit message is not posted")
