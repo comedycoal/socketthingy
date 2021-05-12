@@ -4,7 +4,7 @@ VK_SHIFT = [0x10, 0xa0, 0xa1]
 VK_CAPS_LOCK = 0x14
 
 def NormalChar(vkCode):
-    return (vkCode >=0x30 and vkCode <=0x39) or (vkCode >=0x41 and vkCode <=0x5a) or (vkCode >= 0x60 and vkCode <= 0x6f and vkCode != 0x6c) or (vkCode >=0xca and vkCode <=0xd0) or (vkCode >=0xdb and vkCode <=0xde) or vkCode == 0x20
+    return (vkCode >=0x30 and vkCode <=0x39) or (vkCode >=0x41 and vkCode <=0x5a) or (vkCode >= 0x60 and vkCode <= 0x6f and vkCode != 0x6c) or (vkCode >=0xba and vkCode <=0xc0) or (vkCode >=0xca and vkCode <=0xd0) or (vkCode >=0xdb and vkCode <=0xde) or vkCode == 0x20
 
 VK_CODE[0x00] = 'UKN'
 VK_CODE[0x01] = 'UKN'
@@ -261,3 +261,6 @@ VK_CODE[0xfb] = 'UKN'
 VK_CODE[0xfc] = 'UKN'
 VK_CODE[0xfd] = 'UKN'
 VK_CODE[0xfe] = 'UKN'
+
+if __name__ == '__main__':
+    print(NormalChar(0xba))

