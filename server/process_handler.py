@@ -36,8 +36,9 @@ class ProcessHandler():
     def FetchWithPIDs(self, pids):
         list_processes = []
         for pid in pids:
-            pr = psutil.Process(pid)
-            list_processes.append(pr.as_dict(['pid', 'name', 'num_threads']))
+            if (psutil.pid_exists(pid)):
+                pr = psutil.Process(pid)
+                list_processes.append(pr.as_dict(['pid', 'name', 'num_threads']))
         return list_processes
 
     def KillProcess(self, id):
@@ -45,8 +46,8 @@ class ProcessHandler():
         to_kill.kill()
 
     def StartProcess(self, name):
-        process = name + ".exe"
-        subprocess.Popen(process)
+        subprocess.Popen(name)
+
 
 
 
