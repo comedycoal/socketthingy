@@ -13,24 +13,20 @@ class Request:
 
     #Override this if Screenshot_GUI since extraData needs processing
     def OnStartGUI(self):
-        # state = self.MakeFinishRequest()
-        # if state != ClientState.SUCCEEDED and state != ClientState.INVALID:
-        #     showinfo(title = '', message = 'Lỗi kết nối đến server')
-        #     return False
-
         state, _ = self.MakeBaseRequest()
-        if state != ClientState.SUCCEEDED:
+        
+        if state == ClientState.NOCONNECTION:
+            showinfo(title = '', message = 'Chưa kết nối đến server')
+            return False
+        elif state != ClientState.SUCCEEDED:
             showinfo(title = '', message = 'Lỗi kết nối đến server')
             return False
-
+            
         self.ShowWindow()
         return True
 
     def OnExitGUI(self):
         state = self.MakeFinishRequest()
-        # if state != client.ClientState.SUCCEEDED:
-        #     showinfo(title = '', message = 'Lỗi kết nối đến server')
-
         if self.MainWindow:
            self.MainWindow.destroy()
 

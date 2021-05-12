@@ -21,11 +21,11 @@ class ProcessRunning(Request):
         self.process_tree = ttk.Treeview(self.MainWindow, columns = self.headings, show = 'headings')
         self.process_tree.heading(self.headings[0], text = self.headings[0])
         self.process_tree.column(self.headings[0], width = 140)
-        self.process_tree.heading(self.headings[1], text = self.headings[2])
+        self.process_tree.heading(self.headings[1], text = self.headings[1])
         self.process_tree.column(self.headings[1], width = 80)
         self.process_tree.heading(self.headings[2], text = self.headings[2])
         self.process_tree.column(self.headings[2], width = 100)
-        self.tree_scrollbar = ttk.Scrollbar(orient = "vertical", command = self.process_tree.yview)
+        self.tree_scrollbar = ttk.Scrollbar(self.MainWindow, orient = "vertical", command = self.process_tree.yview)
         self.process_tree.config(yscrollcommand = self.tree_scrollbar.set)
         self.process_tree.place(x = 30, y = 80, height = 300, width = 420)
         self.tree_scrollbar.place(x = 435, y = 80, height = 300, width = 15)
@@ -74,12 +74,10 @@ class ProcessRunning(Request):
             return
     
         itemlist = json.loads(rawdata)
-        itemlist = [itemlist[1], itemlist[0], itemlist[2]]
         for item in self.process_tree.get_children():
             self.process_tree.delete(item)
-        for item in self.itemlist:
-            self.process_tree.insert('', 'end', values = item)
-
+        for item in itemlist:
+            self.process_tree.insert('', 'end', values = (item["name"], item["pid"], item["num_threads"]))
 
     def OnEraseButton(self):
         for item in self.process_tree.get_children():

