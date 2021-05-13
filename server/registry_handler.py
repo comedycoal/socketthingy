@@ -2,9 +2,10 @@ from handler_state import HandlerState
 import winreg
 import subprocess
 import os
+import ctypes
 from pathlib import Path
 
-TEMP_PATH = FILE_PATH = os.path.join(Path(__file__).parent.absolute(),"temp\\tempreg.reg")
+TEMP_PATH = os.path.join(Path(__file__).parent.absolute(),"temp\\tempreg.reg")
 
 def StringToBytes(string):
     return bytes([int(i) for i in string])
@@ -76,6 +77,7 @@ class RegistryHandler:
             return HandlerState.FAILED, None
 
     def UseRegFile(self, filepath):
+        ctypes.windll.shell32.ShellExecuteA
         subprocess.Popen(f"regedit /s \"{filepath}\"")
 
     def GetValue(self, keyPath, valueName):
@@ -142,5 +144,6 @@ class RegistryHandler:
 
 if __name__ == "__main__":
     a = RegistryHandler()
-    state, m = a.Execute("GETVALUE", "HKEY_CURRENT_USER\\Test aaaa")
-    print(m)
+    #state, m = a.Execute("GETVALUE", "HKEY_CURRENT_USER\\Test aaaa")
+    a.UseRegFile(TEMP_PATH)
+    #print(m)
