@@ -33,7 +33,7 @@ class ClientProgram:
         self.requestID = 0
         
     def __del__(self):
-        self.sock.close()
+        self.Disconnect()
 
     def Run(self):
         '''
@@ -83,6 +83,8 @@ class ClientProgram:
         '''
         Disconnect from server
         '''
+        if not self.sock:
+            return
         self.sock.close()
         self.connected = False
         self.sock = None

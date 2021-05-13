@@ -21,7 +21,7 @@ class Request:
         elif state != ClientState.SUCCEEDED:
             showinfo(title = '', message = 'Lỗi kết nối đến server')
             return False
-            
+        
         self.ShowWindow()
         return True
 

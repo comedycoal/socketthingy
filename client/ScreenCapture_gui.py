@@ -4,7 +4,6 @@ import tkinter.ttk as ttk
 from tkinter.messagebox import showinfo
 
 from PIL import Image, ImageTk
-import PIL
 
 from client import ClientState
 from Request_gui import Request
@@ -13,26 +12,36 @@ class Screenshot(Request):
     def __init__(self, client):
         super().__init__(client, "SCREENSHOT")
         self.capturedScreen = None
+        self.a = None
+
+    def __del__(self):
+        if self.capturedScreen:
+            self.capturedScreen.close()
 
     def OnStartGUI(self):
-        self.MainWindow = tkinter.Tk()
-        self.MainWindow.geometry("500x420")
-        self.MainWindow.title("pic")
-
-        state = self.CaptureScreen()
-        if state == True:
-            self.ShowWindow()
-        else:
-            self.MainWindow.destroy()
-
+        self.OnExitGUI()
+        self.ShowWindow()
+        pass
 
     def OnExitGUI(self):
         if self.MainWindow:
            self.MainWindow.destroy()
+        if self.capturedScreen:
+           self.capturedScreen.close()
         pass
     
     def ShowWindow(self):
-        pic_button1 = tkinter.Button(self.MainWindow, text = "Chụp", command = self.CaptureScreen)
+        self.MainWindow = tkinter.Toplevel()
+        self.MainWindow.geometry("500x420")
+        self.MainWindow.title("pic")
+
+        self.CaptureScreen()
+
+        showthis = ImageTk.PhotoImage(self.capturedScreen.resize((380,380), Image.ANTIALIAS))
+        self.image = tkinter.Label(self.MainWindow, height = 380, width = 380, image=showthis)
+        self.image.place(x = 15, y = 25, height = 380, width = 380)
+
+        pic_button1 = tkinter.Button(self.MainWindow, text = "Chụp", command = self.OnStartGUI)
         pic_button1.place(x = 400, y = 25 , height = 260, width = 90)
 
         pic_button2 = tkinter.Button(self.MainWindow, text = "Lưu", command = self.SavePicture)
@@ -49,8 +58,22 @@ class Screenshot(Request):
         image = Image.frombytes("RGB", (w, h), pixels)
         return image
 
-
     def CaptureScreen(self):
+        '''
+        Signal server to capture its screen and send back.
+        Data is then processed and save into a PIL Image object,
+        which in turns is attached to self.captureScreen variable
+
+        Returns:
+            True: if everything happened impeccably
+            False: if any errors occurs, self.capturedScreen will be None
+        '''
+        if self.capturedScreen:
+            self.capturedScreen.close()
+            self.capturedScreen = None
+
+        state = ClientState.SUCCEEDED
+        rawdata = None
         state, rawdata = self.MakeBaseRequest()
         if state == ClientState.NOCONNECTION:
             showinfo(title = '', message = 'Chưa kết nối đến server')
@@ -58,13 +81,9 @@ class Screenshot(Request):
         elif state != ClientState.SUCCEEDED:
             showinfo(title = '', message = 'Lỗi kết nối đến server')
             return False
+
         try:
             self.capturedScreen = self.BytesToImage(rawdata)
-            image = self.capturedScreen.resize((380,380), Image.ANTIALIAS)
-            img = ImageTk.PhotoImage(image)
-            picture = tkinter.Label(self.MainWindow, image = img)
-            picture.place(x = 15, y = 25, height = 380, width = 380)
-            
             return True
         except Exception as e:
             showinfo(title = '', message = e)
