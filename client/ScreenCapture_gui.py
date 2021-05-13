@@ -91,8 +91,10 @@ class Screenshot(Request):
 
     def SavePicture(self):
         imagename = filedialog.asksaveasfilename(initialdir = 'C:', title = 'Save As', 
-            filetypes = (('all files', '*.*'), ('png files', '*.png'), ('bmp files', '*.bmp'), ('jpg files', '*.jpg')))
-        self.capturedScreen.save(imagename)
+            defaultextension='.png',
+            filetypes = [('PNG files', '*.png'), ('BMP files', '*.bmp'), ('JPG files', '*.jpg')])
+        print(imagename)
+        self.capturedScreen.save(imagename) 
         pass
 
 
