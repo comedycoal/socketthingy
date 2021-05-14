@@ -27,30 +27,26 @@ class ClientGUI():
             showinfo(title = '', message = 'Lỗi kết nối đến server')
 
     def Disconnect(self):
-        state = self.clientProgram.Disconnect()
-        # handle error?
+        self.clientProgram.Disconnect()
 
     def OnShutdownButton(self):
         state, _ = self.clientProgram.MakeRequest("SHUTDOWN")
         if state == ClientState.SUCCEEDED:
             showinfo(title = '', message = 'Thực hiện thành công')
-            # Bên server chuẩn bị tắt máy thì client mình làm gì nhỉ
-            pass
+            self.Disconnect()
         else:
             showinfo(title = '', message = 'Lỗi kết nối đến server')
-            #Handle, in không thể liên lạc với server chẳng hạn
-            pass
 
     def OnExitButton(self):
-        # Ngắt kết nối
         state, _ = self.clientProgram.MakeRequest("EXIT")
         if state == ClientState.SUCCEEDED:
             self.Disconnect()
+            showinfo(title = '', message = 'Thực hiện thành công')
             pass
         else:
-            
+            showinfo(title = '', message = 'Lỗi kết nối đến server')
             pass
-        self.ClientWindow.destroy()
+        #self.ClientWindow.destroy()
 
     def ShowWindow(self):
         self.ClientWindow = tkinter.Tk()
