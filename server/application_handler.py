@@ -38,7 +38,6 @@ class ApplicationHandler(ProcessHandler):
         super().__init__()
         self.pids = None
 
-
     def FetchAndUpdate(self):
         self.processes = self.FetchWithPIDs(self.FetchAppPIDSet())
         return self.processes

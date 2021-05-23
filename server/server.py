@@ -19,7 +19,7 @@ HOST = "0.0.0.0"
 PORT = 6666
 BACKLOG = 1
 
-KEYLOG_FILE_PATH = os.path.join(Path(__file__).parent.absolute(),"temp\\logged_key.txt")
+KEYLOG_FILE_PATH = os.path.join(Path(__file__).parent.absolute(),"logged_key.txt")
 
 class ServerProgram:
     QUIT_PROGRAM = 0
