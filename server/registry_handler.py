@@ -17,7 +17,7 @@ class RegistryHandler:
         "QWORD": winreg.REG_QWORD,
         "STRING": winreg.REG_SZ,
         "MULTISTRING": winreg.REG_MULTI_SZ,
-        "EXPANDABLESTRING": winreg.REG_EXPAND_SZ,    
+        "EXPANDABLESTRING": winreg.REG_EXPAND_SZ,
     }
 
     def __init__(self):
@@ -90,7 +90,7 @@ class RegistryHandler:
         key = self.GetKeyHandle(keyPath, winreg.KEY_SET_VALUE)
         winreg.SetValueEx(key, valueName, 0, typeValue, value)
         winreg.CloseKey(key)
-        
+
     def DeleteValue(self, keyPath, valueName):
         key = self.GetKeyHandle(keyPath, winreg.KEY_SET_VALUE)
         winreg.DeleteValue(key, valueName)

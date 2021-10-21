@@ -32,7 +32,7 @@ class Request:
 
     def MakeBaseRequest(self):
         state, _ = self.client.MakeRequest(self.baseRequest)
-        return state, _   
+        return state, _
 
     def MakeFinishRequest(self):
         state, _ = self.client.MakeRequest("FINISH")

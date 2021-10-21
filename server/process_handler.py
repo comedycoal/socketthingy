@@ -21,7 +21,7 @@ class ProcessHandler():
                 self.StartProcess(data)
                 newData = self.FetchAndUpdate()
             else:
-                return HandlerState.INVALID, None          
+                return HandlerState.INVALID, None
             return HandlerState.SUCCEEDED, json.dumps(newData).encode("utf-8")
 
         except Exception as e:
@@ -49,12 +49,9 @@ class ProcessHandler():
         subprocess.Popen(name)
 
 
-
-
 if __name__ == "__main__":
     a = ProcessHandler()
     state, m = a.Execute("FETCH", "")
     a = json.loads(m)
     for i in a:
         print(i)
-    

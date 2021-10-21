@@ -40,7 +40,7 @@ class ServerProgram:
 
     def OpenServer(self, host=HOST, port=PORT, backlog=BACKLOG):
         '''Open the server at (host, port) for backlog ammount of unaccepted connections
-        
+
         Parameters:
             host (str): host part
             port (int): port
@@ -63,7 +63,7 @@ class ServerProgram:
         '''
         Enable the main loop of the Program, enable the Program to receive and handle messages from client
          via the client socket.
-         
+
         Can only be called when A client is connected
         '''
         if not self.clientSocket:
@@ -96,18 +96,18 @@ class ServerProgram:
                     message = self.clientSocket.recv(length - bytesReceived)
                     bytesReceived += len(message)
                     chunks.append(message)
-                
+
                 message = b''.join(chunks)
                 return message.decode(FORMAT)
         except Exception as e:
             print(e)
-            
+
         return None
 
     def SendMessage(self, string, binaryData=None):
         '''
         Send a message to client
-        
+
         Parameters:
             string (str): the request
             binaryData (bytes, None): additional data in binary form, will be attatched to the request, separate by a single b' '
@@ -124,17 +124,17 @@ class ServerProgram:
             length = len(req)
             header = str(length).encode(FORMAT)
             header += b' ' * (HEADER - len(header))
-            
+
             bytes_sent = self.clientSocket.send(header)
             assert bytes_sent == HEADER, "Length of message sent does not match that of the actual message"
-                
+
             bytes_sent = self.clientSocket.send(req)
             assert bytes_sent == length, "Length of message sent does not match that of the actual message"
 
             return True
         except Exception as e:
             print(e)
-        
+
         return False
 
     def HandleRequest(self, requestString):

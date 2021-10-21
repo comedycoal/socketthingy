@@ -25,4 +25,4 @@ class ScreenshotHandler():
 if __name__ == "__main__":
     a = ScreenshotHandler()
     m, n = a.Execute("", "")
-    
+
