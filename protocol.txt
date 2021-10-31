@@ -1,0 +1,35 @@
+SHUTDOWN <S, L>
+
+SCREENSHOT <SINGLE, LIVE>
+
+PROCESS			- FETCH
+				- START <Name>
+				- KILL <PID>
+				- FINISH
+
+APPLICATION		- FETCH
+				- START <Name>
+				- KILL <PID>
+				- FINISH
+
+REGISTRY		- REGFILE <Content>
+				- GETVALUE <PATH> <VALUENAME>
+
+KEYLOG			- HOOK
+				- UNHOOK
+				- FETCH
+				- CLEAR
+				- LOCK <duration>
+				- UNLOCK
+				- FINISH
+
+INFO <MACADDRESS,...>
+
+DIRECTORY 		- VIEW "<abs_path>"
+				- COPY "<path1>" "<path2>"
+				- CUT "<path1>" "<path2>"
+				- DELETE "<abs_path>"
+				- RENAME "<abs_path>" "new_name"
+				- FINISH
+
+EXIT

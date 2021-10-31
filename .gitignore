@@ -1,3 +1,4 @@
 .vscode/
 **/__pycache__/
 */temp/
+server/test_dir/*
