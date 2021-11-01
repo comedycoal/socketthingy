@@ -14,7 +14,7 @@ class ShutdownHandler:
                 os.system("shutdown /l /t 3")
                 return HandlerState.SUCCEEDED, None
             else:
-                assert False
+                return HandlerState.INVALID, None
         except:
             return HandlerState.FAILED, None
 
