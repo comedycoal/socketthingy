@@ -31,7 +31,7 @@ class ClientProgram:
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.connected = False
         self.requestID = 0
-        
+
     def __del__(self):
         self.Disconnect()
 
@@ -41,7 +41,7 @@ class ClientProgram:
         '''
         try:
             assert self.connected, "No connection is made"
-        except AssertionError as e: 
+        except AssertionError as e:
             print(e)
             return
         a = 0
@@ -52,7 +52,8 @@ class ClientProgram:
             m = 0
             if data:
                 m = len(data)
-            if req == "EXIT" and state == ClientState.SUCCEEDED:
+            if (req == "EXIT" and state == ClientState.SUCCEEDED) or state == ClientState.BADCONNECTION:
+                print("Program terminated")
                 break
     
     def Connect(self, host=HOST, port=PORT):

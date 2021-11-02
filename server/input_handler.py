@@ -169,7 +169,7 @@ class InputHandler:
             return HandlerState.SUCCEEDED, extraData.encode("utf-8")
             pass
         except Exception as e:
-            raise e
+            traceback.print_exc()
             return HandlerState.FAILED, None
 
     def Hook(self):
@@ -189,25 +189,28 @@ class InputHandler:
     def Lock(self, duration=10):
         assert not self.locked, "Input is already locked."
 
-        state = windll.user32.BlockInput(True)
-        print(state)
-        assert state, "Cannot lock input"
-        self.locked = True
-
         if duration != None:
-            self.lockTimerThread = threading.Thread(target=TimedCall, args=(self.Unlock, duration, ), daemon=True)
-
-        if self.lockTimerThread != None:
+            self.lockTimerThread = threading.Thread(target=self.TimedLock, args=(duration, ), daemon=True)
             self.lockTimerThread.start()
+        else:
+            state = windll.user32.BlockInput(True)
+            assert state, "Cannot lock input"
+            self.locked = True
+
+    def TimedLock(self, duration):
+        state = windll.user32.BlockInput(True)
+        self.locked = True
+        time.sleep(duration)
+        self.Unlock()
+        self.lockTimerThread = None
 
     def Unlock(self):
         assert self.locked, "Input is already unlocked."
 
         state = windll.user32.BlockInput(False)
-        assert not state, "Cannot unlock input."
+        assert state, "Cannot unlock input."
 
         self.locked = False
-        self.lockTimerThread = None
 
     def __del(self):
         self.Unhook()
@@ -231,6 +234,5 @@ if __name__ == "__main__":
     # print(Logger.Read())
 
     a = InputHandler("temp.txt")
-
-    a.Execute("LOCK", 2)
+    a.Execute("LOCK", "3")
     time.sleep(5)
