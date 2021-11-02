@@ -1,6 +1,7 @@
 import psutil
 import json
 import subprocess
+import traceback
 from handler_state import HandlerState
 
 class ProcessHandler(): 
@@ -25,7 +26,7 @@ class ProcessHandler():
             return HandlerState.SUCCEEDED, json.dumps(newData).encode("utf-8")
 
         except Exception as e:
-            print(e)
+            traceback.print_exc()
             return HandlerState.FAILED, None
 
     def FetchAndUpdate(self):

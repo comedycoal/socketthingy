@@ -3,6 +3,7 @@ from ctypes import windll, byref, c_int, c_void_p, POINTER, CFUNCTYPE
 from ctypes import wintypes
 import threading
 import time
+import traceback
 from pathlib import Path
 
 from handler_state import HandlerState
@@ -79,7 +80,7 @@ class KBDLLHOOKSTRUCT(ctypes.Structure):
                 ("scanCode", wintypes.DWORD),
                 ("flags", wintypes.DWORD),
                 ("time", wintypes.DWORD),
-                ("dwExtraInfo", wintypes.DWORD)]  
+                ("dwExtraInfo", wintypes.DWORD)]
 
 LLKP_decl = CFUNCTYPE(c_int, c_int, wintypes.WPARAM, POINTER(KBDLLHOOKSTRUCT))
 LPTHREAD_START_ROUTINE = ctypes.WINFUNCTYPE(wintypes.DWORD, wintypes.LPVOID)

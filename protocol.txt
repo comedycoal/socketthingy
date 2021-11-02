@@ -1,6 +1,6 @@
 SHUTDOWN <S, L>
 
-SCREENSHOT <SINGLE, LIVE>
+SCREENSHOT <SINGLE, LIVE, STOP>
 
 PROCESS			- FETCH
 				- START <Name>
@@ -25,7 +25,7 @@ KEYLOG			- HOOK
 
 INFO <MACADDRESS,...>
 
-DIRECTORY 		- VIEW "<abs_path>"
+DIRECTORY		- VIEW "<abs_path>"
 				- COPY "<path1>" "<path2>"
 				- CUT "<path1>" "<path2>"
 				- DELETE "<abs_path>"

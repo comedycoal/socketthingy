@@ -1,15 +1,19 @@
 import socket
 import os
 import time
+import timeit
+import threading
+import traceback
 from pathlib import Path
 
 from handler_state import HandlerState
-from server.directory_handler import DirectoryHandler
 
+from directory_handler import DirectoryHandler
+from screen_handler import ScreenHandler
+from info_handler import InfoHandler
 from shutdown_handler import ShutdownHandler
 from process_handler import ProcessHandler
 from application_handler import ApplicationHandler
-from screenshot_handler import ScreenshotHandler
 from input_handler import InputHandler
 from registry_handler import RegistryHandler
 
@@ -25,6 +29,8 @@ KEYLOG_FILE_PATH = os.path.join(Path(__file__).parent.absolute(),"logged_key.txt
 class ServerProgram:
     QUIT_PROGRAM = 0
     CONTINUE_PROGRAM = 1
+    LIVE_STREAM_ENABLED = 2
+    LIVE_STREAM_DISABLED = 3
 
     def __init__(self):
         self.serverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -69,13 +75,49 @@ class ServerProgram:
         '''
         if not self.clientSocket:
             print("No client is connected, exitting")
+
         while True:
             req = self.ReceiveMessage()
             if not req:
                 print("No messages sent")
                 break
             state = self.HandleRequest(req)
-            if state == ServerProgram.QUIT_PROGRAM:
+            if state == ServerProgram.LIVE_STREAM_ENABLED:
+                TARGET_FPS = 24
+                TIME_FRAME = 1 / TARGET_FPS
+                stopEvent = threading.Event()
+                stopEvent.clear()
+
+                def listen(sp: ServerProgram, stop: threading.Event):
+                    while True:
+                        req = sp.ReceiveMessage()
+                        if req == "SCREENSHOT STOP":
+                            stop.set()
+                            sp.SendMessage("SUCCEEDED")
+                            return
+                        else:
+                            sp.SendMessage("FAILED")
+
+                # start a thread
+                thread = threading.Thread(target=listen, args=(self, stopEvent))
+                thread.start()
+
+                frame = 0
+                elapsed = 0
+                while not stopEvent.is_set():
+                    start = timeit.default_timer()
+                    state = self.HandleRequest("SCREENSHOT SINGLE")
+                    targetTime = frame * TIME_FRAME
+                    frame += 1
+                    end = timeit.default_timer()
+                    elapsed += (end - start)
+
+                    waitTime = targetTime - elapsed if targetTime >= elapsed else 0.0
+                    time.sleep(waitTime)
+
+                thread.join()
+
+            elif state == ServerProgram.QUIT_PROGRAM:
                 time.sleep(1)
                 break
 
@@ -101,7 +143,7 @@ class ServerProgram:
                 message = b''.join(chunks)
                 return message.decode(FORMAT)
         except Exception as e:
-            print(e)
+            traceback.print_exc()
 
         return None
 
@@ -134,7 +176,7 @@ class ServerProgram:
 
             return True
         except Exception as e:
-            print(e)
+            traceback.print_exc()
 
         return False
 
@@ -174,7 +216,14 @@ class ServerProgram:
                 self.currHandler = ShutdownHandler()
                 immediate = True
             elif request == "SCREENSHOT":
-                self.currHandler = ScreenshotHandler()
+                self.currHandler = ScreenHandler()
+                immediate = True
+                if data == "LIVE":
+                    return ServerProgram.LIVE_STREAM_ENABLED
+                elif data == "STOP":
+                    return ServerProgram.LIVE_STREAM_DISABLED
+            elif request == "INFO":
+                self.currHandler = InfoHandler()
                 immediate = True
             # The rest needs additional requests and looping
             else:
@@ -228,6 +277,7 @@ class ServerProgram:
         Returns:
             (str | None, str | None): 2 strings if request is splitable, 1 string if not and (None, None) if request is empty
         '''
+        request = request.strip()
         a = request.split(" ", 1)
         if len(a) == 2:
             return a[0], a[1]

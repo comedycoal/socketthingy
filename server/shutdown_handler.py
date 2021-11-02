@@ -1,4 +1,5 @@
 import os
+import traceback
 from handler_state import HandlerState
 
 class ShutdownHandler:

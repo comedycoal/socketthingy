@@ -52,7 +52,6 @@ class ClientProgram:
             m = 0
             if data:
                 m = len(data)
-            print(state, m)
             if req == "EXIT" and state == ClientState.SUCCEEDED:
                 break
     
@@ -126,7 +125,7 @@ class ClientProgram:
        # Process reply from server 
         try:
             stateStr, rawdata = self.ProcessReply(reply)
-            print(stateStr, len(rawdata) if rawdata else None)
+            print(stateStr, rawdata)
             return ClientProgram.States[stateStr], rawdata if rawdata else None
         except Exception as e:
             print(e)

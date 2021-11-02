@@ -3,6 +3,7 @@ import winreg
 import subprocess
 import os
 import ctypes
+import traceback
 from pathlib import Path
 
 TEMP_PATH = os.path.join(Path(__file__).parent.absolute(),"temp\\tempreg.reg")
@@ -73,7 +74,7 @@ class RegistryHandler:
 
             return HandlerState.SUCCEEDED, extraData.encode('utf-8')
         except Exception as e:
-            print(e)
+            traceback.print_exc()
             return HandlerState.FAILED, None
 
     def UseRegFile(self, filepath):

@@ -1,5 +1,6 @@
 from handler_state import HandlerState
 import uuid
+import traceback
 
 class InfoHandler():
     def __init__(self):
@@ -16,5 +17,5 @@ class InfoHandler():
                 return HandlerState.INVALID, None
 
         except Exception as e:
-            print(e)
+            traceback.print_exc()
             return HandlerState.FAILED, None
