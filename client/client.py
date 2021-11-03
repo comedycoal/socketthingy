@@ -59,11 +59,9 @@ class ClientProgram:
     def Connect(self, host=HOST, port=PORT):
         '''
         Connects to a server listening at (host, port)
-
         Parameters:
             host (str): host part
             port (int): port part
-
         return:
             True: if connection is successful
             False: if not
@@ -93,10 +91,8 @@ class ClientProgram:
         '''
         A wrapper for sending requests and receiving replies for each.
         Sends a message corresponding to 'request', then wait and receive for a reply from server
-
         Parameters:
             request (str): request in string form
-
         Returns:
             state (ClientState): the state of the connection or the message itself
             rawdata (bytes | None): is any data the server sent back
@@ -139,7 +135,6 @@ class ClientProgram:
         Parameters:
             string (str): the request
             binaryData (bytes, None): additional data in binary form, will be attatched to the request, separate by a single b' '
-
         Returns:
             True: if the message is sent properly
             False: if any errors occurs
@@ -167,7 +162,6 @@ class ClientProgram:
     def ReceiveMessage(self):
         '''
         Receive messages send through client socket, blocking the program/thread.
-
         Returns:
             str: if any message is received.
             None: if any errors occur or no message is received
@@ -193,14 +187,11 @@ class ClientProgram:
     def ProcessReply(self, reply):
         '''
         Split reply string into 2 parts to process by the client
-
         Parameters:
             reply (str): a reply string from server
-
         Returns:
             stateStr (str): a string starting the message, indicating a corresponding ClientState
             rawdata (bytes): is any data attached to the reply
-
         '''
         try:
             splitted = reply.split(b' ',1)

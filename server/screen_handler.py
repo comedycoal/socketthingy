@@ -104,4 +104,3 @@ if __name__ == "__main__":
     DEBUG = True
     a = ScreenshotHandler()
     m, n = a.Execute("", "")
-

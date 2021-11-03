@@ -47,7 +47,6 @@ class ServerProgram:
 
     def OpenServer(self, host=HOST, port=PORT, backlog=BACKLOG):
         '''Open the server at (host, port) for backlog ammount of unaccepted connections
-
         Parameters:
             host (str): host part
             port (int): port
@@ -70,7 +69,6 @@ class ServerProgram:
         '''
         Enable the main loop of the Program, enable the Program to receive and handle messages from client
          via the client socket.
-
         Can only be called when A client is connected
         '''
         if not self.clientSocket:
@@ -124,7 +122,6 @@ class ServerProgram:
     def ReceiveMessage(self):
         '''
         Receive messages send through client socket, blocking the program/thread.
-
         Returns:
             str: if any message is received.
             None: if any errors occur or no message is received
@@ -150,11 +147,9 @@ class ServerProgram:
     def SendMessage(self, string, binaryData=None):
         '''
         Send a message to client
-
         Parameters:
             string (str): the request
             binaryData (bytes, None): additional data in binary form, will be attatched to the request, separate by a single b' '
-
         Returns:
             True: if the message is sent properly
             False: if any errors occurs
@@ -183,12 +178,9 @@ class ServerProgram:
     def HandleRequest(self, requestString):
         '''
         Handle request sent by client.
-
         Request is handled, then passed to SendMessage to send a reply with appropriate data to client, this step is blocking.
-
         Parameters:
             requestString (str): the reqeust string
-
         Returns:
             int: either ServerProgram.CONTINUE or ServerProgram.QUIT_PROGRAM
         '''
@@ -270,10 +262,8 @@ class ServerProgram:
     def SplitRequest(self, request):
         '''
         Split a string request into 2 part: base request and extraData
-
         Parameters:
             request (str): a string request
-
         Returns:
             (str | None, str | None): 2 strings if request is splitable, 1 string if not and (None, None) if request is empty
         '''
