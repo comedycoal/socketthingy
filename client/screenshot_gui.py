@@ -7,7 +7,7 @@ from PySide2.QtCore import *
 from PySide2 import QtGui, QtWidgets
 from PySide2.QtGui import *
 from PySide2.QtWidgets import *
-from PIL import Image
+from PIL import Image, ImageQt
 
 from client import ClientState
 from Request_gui import Request
@@ -31,7 +31,7 @@ class ScreenShotUI(Request):
         self.screen_capture_button.setObjectName("screen_capture_button")
         self.screen_capture_button.setText(QCoreApplication.translate("MainWindow", "Capture Screen"))
 
-        self.save_button = QPushButton(clicked = lambda: self.onStopLivestream())
+        self.save_button = QPushButton(clicked = lambda: self.onSavePicture())
         font = QtGui.QFont()
         font.setFamily("Helvetica")
         font.setPointSize(12)
@@ -65,7 +65,8 @@ class ScreenShotUI(Request):
         w = int(split[0].decode("utf-8"))
         h = int(split[1].decode("utf-8"))
         pixels = split[2]
-        image = Image.frombytes("RGB", (w, h), pixels)
+        image = Image.frombytes("RGBA", (w, h), pixels)
+
         return image
 
     def onCapScreen(self):
@@ -84,15 +85,15 @@ class ScreenShotUI(Request):
             return False
 
         try:
-            self.image = self.BytesToImage(rawdata)
-            self.imageView.setPixmap(QPixmap(self.image))
+            self.image = self.BytesToQImage(rawdata)
+            self.imageView.setPixmap(QPixmap(ImageQt.ImageQt(self.image)))
             return True
         except Exception as e:
             QMessageBox.about(self, "", e)
             return False
         pass
 
-    def SavePicture(self):
+    def onSavePicture(self):
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
         imagename, _ = QFileDialog.getSaveFileName(

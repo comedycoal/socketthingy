@@ -34,7 +34,6 @@ class ServerProgram:
     LIVE_STREAM_DISABLED = 3
 
     def __init__(self):
-        self.serverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.currHandler = None
 
         # Only accepts one client
@@ -43,8 +42,10 @@ class ServerProgram:
         self.connected = False
 
     def __del__(self):
-        self.serverSocket.close()
-        self.clientSocket.close()
+        if self.serverSocket != None:
+            self.serverSocket.close()
+        if self.clientSocket != None:
+            self.clientSocket.close()
 
     def OpenServer(self, host=HOST, port=PORT, backlog=BACKLOG):
         '''Open the server at (host, port) for backlog ammount of unaccepted connections
@@ -53,6 +54,8 @@ class ServerProgram:
             port (int): port
             backlog (int): backlog number
         '''
+        self.serverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.currHandler = None
         self.serverSocket.bind((host, port))
         self.serverSocket.listen(backlog)
         self.clientSocket, self.address = self.serverSocket.accept()
@@ -79,11 +82,13 @@ class ServerProgram:
             req = self.ReceiveMessage()
             if not req:
                 print("No messages sent")
+                time.sleep(0.5)
+                self.CloseServer()
                 break
             state = self.HandleRequest(req)
 
             if state == ServerProgram.QUIT_PROGRAM:
-                time.sleep(1)
+                time.sleep(0.5)
                 self.CloseServer()
                 break
 
@@ -157,6 +162,8 @@ class ServerProgram:
 
         state = HandlerState.INVALID
         extraInfo = None
+
+        print(request, data)
         # FINISH request exits the current handler
         # EXIT request finishes the program
         if request == "FINISH":
@@ -184,24 +191,19 @@ class ServerProgram:
             # The rest needs additional requests and looping
             else:
                 immediate = False
+                state = HandlerState.SUCCEEDED
                 if request == "PROCESS":
                     self.currHandler = ProcessHandler()
-                    state = HandlerState.SUCCEEDED
                 elif request == "APPLICATION":
                     self.currHandler = ApplicationHandler()
-                    state = HandlerState.SUCCEEDED
                 elif request == "KEYLOG":
                     self.currHandler = InputHandler(KEYLOG_FILE_PATH)
-                    state = HandlerState.SUCCEEDED
                 elif request == "REGISTRY":
                     self.currHandler = RegistryHandler()
-                    state = HandlerState.SUCCEEDED
                 elif request == "DIRECTORY":
                     self.currHandler = DirectoryHandler()
-                    state = HandlerState.SUCCEEDED
                 elif request == "LIVESTREAM":
-                    self.currHandler = LivestreamHandler()
-                
+                    self.currHandler = LivestreamHandler(self, self.serverSocket, ScreenHandler())
 
         # Else let current handler handle request
         else:
@@ -212,10 +214,7 @@ class ServerProgram:
             self.currHandler = None
             immediate = False
 
-        a = 0
-        if extraInfo:
-            a = len(extraInfo)
-        print(request, data, a)
+        print(state, len(extraInfo) if extraInfo != None else '')
 
         if request == "SHUTDOWN" and state == HandlerState.SUCCEEDED:
             return ServerProgram.QUIT_PROGRAM

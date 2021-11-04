@@ -51,13 +51,14 @@ class ScreenHandler():
             traceback.print_exc()
             return HandlerState.FAILED, None
 
-    def TakeScreenshotAsBytes(self):
+    def TakeScreenshotAsBytes(self, w=None, h=None):
         image = ImageGrab.grab()
-        byte_data = image.tobytes()
+        if image.mode != "RGBA":
+            image = image.convert("RGBA")
+        if w != None and h != None:
+            image = image.resize((w, h), Image.ANTIALIAS)
+        byte_data = image.tobytes("raw", "RGBA")
         width, height = image.size
-        if DEBUG:
-            image.save(Path(__file__).parent / ("debug_img" + str(DEBUG_FRAME_COUNT) + ".jpg"), 'JPEG', quality=70)
-            pass
         image.close()
         return width, height, byte_data
 

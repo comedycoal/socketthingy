@@ -8,6 +8,7 @@ from client import ClientState
 from client import ClientProgram
 
 from screenshot_gui import ScreenShotUI
+from streaming_gui import LivestreamUI
 from directory_gui import DirectoryUI
 from input_gui import InputUI
 from process_gui import ProcessUI, ApplicationUI
@@ -18,6 +19,7 @@ class FunctionUI(QtWidgets.QWidget):
         self.clientProgram = clientProgram
         self.keystroke = InputUI(self.clientProgram)
         self.screenshot = ScreenShotUI(self.clientProgram)
+        self.livestream = LivestreamUI(self.clientProgram)
         self.directory = DirectoryUI(self.clientProgram)
         self.process = ProcessUI(self.clientProgram)
         self.application = ApplicationUI(self.clientProgram)
@@ -116,7 +118,7 @@ class FunctionUI(QtWidgets.QWidget):
         self.screenshot_button.setObjectName("screenshot_button")
         self.screenshot_button.setText(_translate("MainWindow", "Screenshot"))
 
-        self.streaming_button = QtWidgets.QPushButton(clicked = lambda:self.screenshot.OnStartGUI())
+        self.streaming_button = QtWidgets.QPushButton(clicked = lambda:self.livestream.OnStartGUI())
         font = QtGui.QFont()
         font.setFamily("Helvetica")
         font.setPointSize(12)

@@ -11,7 +11,6 @@ class ProcessHandler():
 
     def Execute(self, reqCode:str, data:str):
         try:
-            print(reqCode)
             newData = None
             if reqCode == "FETCH":
                 newData = self.FetchAndUpdate()

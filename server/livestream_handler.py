@@ -3,7 +3,6 @@ from screen_handler import ScreenHandler
 
 from pathlib import Path
 import socket
-import timeit
 import time
 import threading
 import traceback
@@ -37,7 +36,6 @@ def SendMessage(sock, string, binaryData=None):
 
         bytes_sent = sock.send(req)
         assert bytes_sent == length, "Length of message sent does not match that of the actual message"
-
         return True
     except Exception as e:
         traceback.print_exc()
@@ -79,25 +77,22 @@ class LivestreamHandler():
         # accept the coming connection from client
         liveSocket, address = hostSocket.accept()
 
-        TARGET_FPS = 24
+        TARGET_FPS = 60
         TIME_FRAME = 1 / TARGET_FPS
 
         frame = 0
-        elapsed = 0
 
+        start = time.perf_counter()
         while not self.livestreamEvent.is_set():
-            start = timeit.default_timer()
-            w, h, data = self.screenHandler.TakeScreenshotAsBytes()
-            state = SendMessage(liveSocket, str(w) + " " + str(h), data)
+            w, h, data = self.screenHandler.TakeScreenshotAsBytes(640, 480)
+            state = SendMessage(liveSocket, str(w) + " " + str(h) + " " + str(frame+1), data)
             if not state:
                 self.HandleMessageFault()
                 break
-
-            targetTime = frame * TIME_FRAME
             frame += 1
-            end = timeit.default_timer()
-            elapsed += (end - start)
-
+            targetTime = frame * TIME_FRAME
+            end = time.perf_counter()
+            elapsed = (end - start)
             waitTime = targetTime - elapsed if targetTime >= elapsed else 0.0
             time.sleep(waitTime)
 

@@ -219,11 +219,6 @@ class InputHandler:
         Logger.Del()
         pass
 
-def Func():
-    print(threading.current_thread())
-    time.sleep(3)
-    print("thread ended")
-
 if __name__ == "__main__":
     # from pathlib import Path
     # import os
