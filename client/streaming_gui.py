@@ -12,9 +12,9 @@ from PIL import Image
 from client import ClientState
 from Request_gui import Request
 
-class ScreenShotUI(Request):
+class LivestreamUI(Request):
     def __init__(self, client):
-        super().__init__(client, 'SCREENSHOT')
+        super().__init__(client, 'LIVESTREAM')
         self.image = None
         pass
 
@@ -22,23 +22,23 @@ class ScreenShotUI(Request):
         self.setWindowTitle(QCoreApplication.translate("MainWindow", "ScreenShot"))
         self.resize(500,500)
 
-        self.screen_capture_button = QPushButton(clicked = lambda:self.onCapScreen())
+        self.streaming_button = QPushButton(clicked = lambda:self.onLivestream())
         font = QtGui.QFont()
         font.setFamily("Helvetica")
         font.setPointSize(12)
-        self.screen_capture_button.setFont(font)
-        self.screen_capture_button.setStyleSheet("background-color: rgb(224, 237, 255)")
-        self.screen_capture_button.setObjectName("screen_capture_button")
-        self.screen_capture_button.setText(QCoreApplication.translate("MainWindow", "Capture Screen"))
+        self.streaming_button.setFont(font)
+        self.streaming_button.setStyleSheet("background-color: rgb(224, 237, 255)")
+        self.streaming_button.setObjectName("streaming_button")
+        self.streaming_button.setText(QCoreApplication.translate("MainWindow", "Streaming"))
 
-        self.save_button = QPushButton(clicked = lambda: self.onStopLivestream())
+        self.stop_button = QPushButton(clicked = lambda: self.onStopLivestream())
         font = QtGui.QFont()
         font.setFamily("Helvetica")
         font.setPointSize(12)
-        self.save_button.setFont(font)
-        self.save_button.setStyleSheet("background-color: rgb(224, 237, 255)")
-        self.save_button.setObjectName("save_button")
-        self.save_button.setText(QCoreApplication.translate("MainWindow", "Save"))
+        self.stop_button.setFont(font)
+        self.stop_button.setStyleSheet("background-color: rgb(224, 237, 255)")
+        self.stop_button.setObjectName("stop_button")
+        self.stop_button.setText(QCoreApplication.translate("MainWindow", "Stop"))
 
         self.imageView = QLabel()
         self.imageView.setStyleSheet("background-color: rgb(224, 237, 255)")
@@ -46,9 +46,9 @@ class ScreenShotUI(Request):
 
         button_layout = QHBoxLayout()
         button_layout.addSpacing(100)
-        button_layout.addWidget(self.screen_capture_button)
+        button_layout.addWidget(self.streaming_button)
         button_layout.addSpacing(10)
-        button_layout.addWidget(self.save_button)
+        button_layout.addWidget(self.stop_button)
         button_layout.addSpacing(100)
 
         mainLayout = QVBoxLayout()
@@ -68,39 +68,25 @@ class ScreenShotUI(Request):
         image = Image.frombytes("RGB", (w, h), pixels)
         return image
 
-    def onCapScreen(self):
+    def onLivestream(self):
         if self.image:
             self.image.close()
             self.image = None
 
         state = ClientState.SUCCEEDED
         rawdata = None
-        state, rawdata = self.MakeBaseRequest()
+        state, rawdata = self.MakeBaseRequest('LIVESTREAM START')
         if state == ClientState.NOCONNECTION:
             QMessageBox.about(self, "", "Chưa kết nối đến server")
             return False
         elif state != ClientState.SUCCEEDED:
             QMessageBox.about(self, "", "Lỗi kết nối đến server")
             return False
-
-        try:
-            self.image = self.BytesToImage(rawdata)
-            self.imageView.setPixmap(QPixmap(self.image))
-            return True
-        except Exception as e:
-            QMessageBox.about(self, "", e)
-            return False
         pass
 
-    def SavePicture(self):
-        options = QFileDialog.Options()
-        options |= QFileDialog.DontUseNativeDialog
-        imagename, _ = QFileDialog.getSaveFileName(
-            self, "Save Image", r"C:", "All Files (*)", options=options
-        )
-        if imagename:
-            with open(imagename, "wb") as f:
-                f.write(self.image)
+    def onStopLivestream(self):
+        state, _ = self.MakeBaseRequest('LIVESTREAM STOP')
+        
         pass
 
     def ShowWindow(self):
@@ -120,7 +106,7 @@ if __name__ == '__main__':
     suppress_qt_warnings()
 
     app = QtWidgets.QApplication(sys.argv)
-    demo = ScreenShotUI(None)
+    demo = LivestreamUI(None)
     demo.setupUI()
     demo.ShowWindow() 
     sys.exit(app.exec_())

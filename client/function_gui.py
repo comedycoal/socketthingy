@@ -107,6 +107,15 @@ class FunctionUI(QtWidgets.QWidget):
         self.keystroke_button.setObjectName("keystroke_button")
         self.keystroke_button.setText(_translate("MainWindow", "Keystroke"))
 
+        self.screenshot_button = QtWidgets.QPushButton(clicked = lambda:self.screenshot.OnStartGUI())
+        font = QtGui.QFont()
+        font.setFamily("Helvetica")
+        font.setPointSize(12)
+        self.screenshot_button.setFont(font)
+        self.screenshot_button.setStyleSheet("background-color: rgb(224, 237, 255)")
+        self.screenshot_button.setObjectName("screenshot_button")
+        self.screenshot_button.setText(_translate("MainWindow", "Screenshot"))
+
         self.streaming_button = QtWidgets.QPushButton(clicked = lambda:self.screenshot.OnStartGUI())
         font = QtGui.QFont()
         font.setFamily("Helvetica")
@@ -159,6 +168,7 @@ class FunctionUI(QtWidgets.QWidget):
         layout = QVBoxLayout()
         layout.addWidget(self.function_label)
         layout.addWidget(self.keystroke_button)
+        layout.addWidget(self.screenshot_button)
         layout.addWidget(self.streaming_button)
         layout.addWidget(self.shutdown_button)
         layout.addWidget(self.logout_button)

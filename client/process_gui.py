@@ -61,7 +61,6 @@ class ProcessUI(Request):
         self.proxy_model = QSortFilterProxyModel(recursiveFilteringEnabled = True)
         self.proxy_model.setSourceModel(self.model)
         self.treeView = self.createProcessTree(self.proxy_model)
-        self.adjust_root_index()
 
         self.kill_button = QtWidgets.QPushButton(clicked = lambda:self.onKill())
         font = QtGui.QFont()
@@ -158,7 +157,6 @@ class ProcessUI(Request):
 
     def onFind(self):
         self.proxy_model.setFilterWildcard("*{}*".format(self.txtFind.text()))
-        self.adjust_root_index()
         # index = self.treeView.selectedIndexes()
         # if index:
         #     self.kill_button.setText(QCoreApplication.translate("MainWindow", "Kill"))
@@ -168,12 +166,6 @@ class ProcessUI(Request):
         #     self.kill_button.setText(QCoreApplication.translate("MainWindow", "Start"))
         #     self.kill_button.clicked.disconnect()
         #     self.kill_button.clicked.connect(self.onStart)
-
-    def adjust_root_index(self):
-        root_index = self.model.index(self.path)
-        proxy_index = self.proxy_model.mapFromSource(root_index)
-        self.treeView.setRootIndex(proxy_index)
-        pass
 
     def showContextMenu(self, point):
         ix = self.treeView.indexAt(point)
