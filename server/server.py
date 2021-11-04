@@ -11,7 +11,7 @@ from handler_state import HandlerState
 from directory_handler import DirectoryHandler
 from screen_handler import ScreenHandler
 from info_handler import InfoHandler
-from server.livestream_handler import LivestreamHandler
+from livestream_handler import LivestreamHandler
 from shutdown_handler import ShutdownHandler
 from process_handler import ProcessHandler
 from application_handler import ApplicationHandler
@@ -207,8 +207,8 @@ class ServerProgram:
                     self.currHandler = DirectoryHandler()
                     state = HandlerState.SUCCEEDED
                 elif request == "LIVESTREAM":
-                    self.currHandler = LivestreamHandler(self.serverSocket, ScreenHandler())
-                    state = HandlerState.SUCCEEDED
+                    self.currHandler
+                
 
         # Else let current handler handle request
         else:
