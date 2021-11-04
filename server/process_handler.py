@@ -49,7 +49,6 @@ class ProcessHandler():
     def StartProcess(self, name):
         subprocess.Popen(name)
 
-
 if __name__ == "__main__":
     a = ProcessHandler()
     state, m = a.Execute("FETCH", "")

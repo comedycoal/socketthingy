@@ -261,6 +261,3 @@ VK_CODE[0xfb] = 'UKN'
 VK_CODE[0xfc] = 'UKN'
 VK_CODE[0xfd] = 'UKN'
 VK_CODE[0xfe] = 'UKN'
-
-if __name__ == '__main__':
-    print(NormalChar(0xba))
