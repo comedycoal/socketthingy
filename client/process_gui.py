@@ -20,14 +20,13 @@ class ProcessUI(Request):
 
     def setupUI(self):
         self.setWindowTitle(QCoreApplication.translate("MainWindow", self.windowName))
-        self.resize(500,500)
+        self.resize(550,500)
 
         self.find_label = QLabel()
         font = QtGui.QFont()
         font.setFamily("Helvetica")
         font.setPointSize(12)
         self.find_label.setFont(font)
-        # self.find_label.setStyleSheet("background-color: rgb(224, 237, 255)")
         self.find_label.setObjectName("find_label")
         self.find_label.setText(QCoreApplication.translate("MainWindow","Find:"))
 
@@ -37,30 +36,11 @@ class ProcessUI(Request):
         font.setFamily("Helvetica")
         font.setPointSize(12)
         self.txtFind.setFont(font)
-        # self.txtFind.setStyleSheet("background-color: rgb(224, 237, 255)")
         self.txtFind.setObjectName("txtFind")
 
-        # self.model = QStandardItemModel(0, 3, self)
-        # self.model.setHeaderData(0, Qt.Horizontal, self.headings[0])
-        # self.model.setHeaderData(1, Qt.Horizontal, self.headings[1])
-        # self.model.setHeaderData(2, Qt.Horizontal, self.headings[2])
-        # self.model.insertRow(0)
-        # self.model.setData(self.model.index(0, 0), "a")
-        # self.model.setData(self.model.index(0, 1), "1")
-        # self.model.setData(self.model.index(0, 2),"test1")
-        # self.model.insertRow(0)
-        # self.model.setData(self.model.index(0, 0), "c")
-        # self.model.setData(self.model.index(0, 1), "3")
-        # self.model.setData(self.model.index(0, 2),"test2")
-        # self.model.insertRow(0)
-        # self.model.setData(self.model.index(0, 0), "b")
-        # self.model.setData(self.model.index(0, 1), "0")
-        # self.model.setData(self.model.index(0, 2),"test3")
-
-        self.model = self.createProcessModel(self)
-        self.proxy_model = QSortFilterProxyModel(recursiveFilteringEnabled = True)
-        self.proxy_model.setSourceModel(self.model)
-        self.treeView = self.createProcessTree(self.proxy_model)
+        self.treeView = QTreeView()
+        self.model =  self.createProcessModel()
+        self.createProcessTree(self.model)
 
         self.kill_button = QtWidgets.QPushButton(clicked = lambda:self.onKill())
         font = QtGui.QFont()
@@ -70,6 +50,31 @@ class ProcessUI(Request):
         self.kill_button.setStyleSheet("background-color: rgb(224, 237, 255)")
         self.kill_button.setObjectName("kill_button")
         self.kill_button.setText(QCoreApplication.translate("MainWindow", "Kill"))
+
+        self.reload_button = QtWidgets.QPushButton(self, clicked = lambda:self.viewProcessTree())
+        font = QtGui.QFont()
+        font.setFamily("Helvetica")
+        font.setPointSize(12)
+        self.reload_button.setFont(font)
+        self.reload_button.setStyleSheet("background-color: rgb(224, 237, 255)")
+        self.reload_button.setObjectName("reload_button")
+        self.reload_button.setText(QCoreApplication.translate("MainWindow", "Reload"))
+
+        self.name_start_label = QLabel()
+        font = QtGui.QFont()
+        font.setFamily("Helvetica")
+        font.setPointSize(12)
+        self.name_start_label.setFont(font)
+        self.name_start_label.setObjectName("name_start_label")
+        self.name_start_label.setText(QCoreApplication.translate("MainWindow","Name of Program:"))
+
+        self.name_start_box = QLineEdit()
+        self.name_start_box = QLineEdit()
+        font = QtGui.QFont()
+        font.setFamily("Helvetica")
+        font.setPointSize(12)
+        self.name_start_box.setFont(font)
+        self.name_start_box.setObjectName("name_start_box")
 
         self.start_button = QtWidgets.QPushButton(self, clicked = lambda:self.onStart())
         font = QtGui.QFont()
@@ -84,101 +89,102 @@ class ProcessUI(Request):
         findLayout.addWidget(self.find_label)
         findLayout.addSpacing(10)
         findLayout.addWidget(self.txtFind)
-        findLayout.addSpacing(10)
-        findLayout.addWidget(self.kill_button)
-        findLayout.addSpacing(10)
-        findLayout.addWidget(self.start_button)
+        # findLayout.addSpacing(10)
+        # findLayout.addWidget(self.kill_button)
+        # findLayout.addSpacing(10)
+        # findLayout.addWidget(self.start_button)
+
+        reloadLayout = QGridLayout()
+        reloadLayout.setHorizontalSpacing(5)
+        reloadLayout.setVerticalSpacing(10)
+        reloadLayout.addWidget(self.reload_button, 0,3)
+        reloadLayout.addWidget(self.name_start_label, 1,0)
+        reloadLayout.addWidget(self.name_start_box, 1,1)
+        reloadLayout.addWidget(self.start_button, 1,3)
 
         mainLayout = QVBoxLayout()
         mainLayout.addItem(findLayout)
         mainLayout.addWidget(self.treeView)
+        mainLayout.addSpacing(5)
+        mainLayout.addItem(reloadLayout)
 
         self.setLayout(mainLayout)
 
     def createProcessTree(self, model):
-        treeView = QTreeView()
-        treeView.setModel(model)
-        treeView.setColumnWidth(0, 300)
-        treeView.setColumnWidth(1, 100)
-        treeView.setAlternatingRowColors(True)
-        treeView.setSortingEnabled(True)
-        treeView.setContextMenuPolicy(Qt.CustomContextMenu)
-        treeView.customContextMenuRequested.connect(self.showContextMenu)
-        return treeView
+        self.treeView.setModel(model)
+        self.treeView.setColumnWidth(0, 300)
+        self.treeView.setColumnWidth(1, 100)
+        self.treeView.setAlternatingRowColors(True)
+        self.treeView.setSortingEnabled(True)
+        self.treeView.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.treeView.customContextMenuRequested.connect(self.showContextMenu)
 
-    def createProcessModel(self, parent):
+    def createProcessModel(self):
         state, rawdata = self.client.MakeRequest('FETCH')
         if state != ClientState.SUCCEEDED:
             QMessageBox.about(self, "", "Không thể tải dữ liệu")
             return
 
-        model = QStandardItemModel(0, 3, parent)
+        model = QStandardItemModel(0, 3, self.treeView)
         model.setHeaderData(0, Qt.Horizontal, self.headings[0])
         model.setHeaderData(1, Qt.Horizontal, self.headings[1])
         model.setHeaderData(2, Qt.Horizontal, self.headings[2])
 
-        itemlist = json.loads(rawdata)
-        self.addItem(model, itemlist)
+        self.itemlist = json.loads(rawdata)
+        self.addItem(model)
 
-        return model
+        proxy_model = QSortFilterProxyModel(recursiveFilteringEnabled = True)
+        proxy_model.setSourceModel(model)
+        return proxy_model
 
-    def addItem(self, model, itemlist):
-        for item in itemlist:
+    def addItem(self, model):
+        for item in self.itemlist:
             model.insertRow(0)
             model.setData(model.index(0, 0), item["name"])
             model.setData(model.index(0, 1), item["pid"])
             model.setData(model.index(0, 2), item["num_threads"])
 
     def viewProcessTree(self):
-        if self.treeView.selectedIndexes():
-            items = self.treeView.selectedIndexes()[0]
-        else:
-            items = []
-        for item in items:
-            self.model.removeRow(item.row())
-
-        self.model = self.createProcessModel(self)
-        self.proxy_model.setSourceModel(self.model)
-        self.treeView = self.createProcessTree(self.proxy_model)
+        state, rawdata = self.client.MakeRequest('FETCH')
+        if state != ClientState.SUCCEEDED:
+            QMessageBox.about(self, "", "Không thể tải dữ liệu")
+            return
+        self.itemlist = json.loads(rawdata)
+        self.model = self.createProcessModel()
+        self.treeView.setModel(self.model)
 
     def onKill(self):
         index = self.treeView.selectedIndexes()[0]
-        item = self.proxy_model.itemData(index)
-        print(item)
-        self.RequestKill(item)
-        
-        self.model.removeRow(index.row())
+        item = self.model.itemData(index)
+        id_to_kill = self.findIDbyName(item[0])
+        self.RequestKill(id_to_kill)
         self.viewProcessTree()
 
+    def findIDbyName(self, name):
+        for item in self.itemlist:
+            if name == item["name"]:
+                return str(item["pid"])
+        return ""
+
     def onStart(self):
-        item = self.txtFind.text()
+        item = self.name_start_box.text()
         self.RequestStart(item)
         self.viewProcessTree()
 
     def onFind(self):
-        self.proxy_model.setFilterWildcard("*{}*".format(self.txtFind.text()))
-        # index = self.treeView.selectedIndexes()
-        # if index:
-        #     self.kill_button.setText(QCoreApplication.translate("MainWindow", "Kill"))
-        #     self.kill_button.clicked.disconnect()
-        #     self.kill_button.clicked.connect(self.onKill)
-        # else:
-        #     self.kill_button.setText(QCoreApplication.translate("MainWindow", "Start"))
-        #     self.kill_button.clicked.disconnect()
-        #     self.kill_button.clicked.connect(self.onStart)
+        self.model.setFilterWildcard("*{}*".format(self.txtFind.text()))
 
     def showContextMenu(self, point):
         ix = self.treeView.indexAt(point)
-        if ix.column() == 0 or ix.column() == 1 or ix.column() == 2:
-            menu = QMenu(self.treeView)
-            menu.addAction("Kill")
-            action = menu.exec_(self.treeView.mapToGlobal(point))
-            if action:
-                if action.text() == "Kill":
-                    self.onKill()
+        menu = QMenu(self.treeView)
+        menu.addAction("Kill")
+        action = menu.exec_(self.treeView.mapToGlobal(point))
+        if action:
+            if action.text() == "Kill":
+                self.onKill()
 
     def RequestKill(self, id_to_kill):
-        state, _ = self.client.MakeRequest('KILL ' + id_to_kill)
+        state, _ = self.client.MakeRequest("KILL " + id_to_kill)
         if state == client.ClientState.SUCCEEDED:
             QMessageBox.about(self, "", "Đã diệt process")
         else:
