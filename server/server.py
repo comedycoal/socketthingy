@@ -86,6 +86,7 @@ class ServerProgram:
 
             if state == ServerProgram.QUIT_PROGRAM:
                 time.sleep(1)
+                self.CloseServer()
                 break
 
     def ReceiveMessage(self):
@@ -207,7 +208,7 @@ class ServerProgram:
                     self.currHandler = DirectoryHandler()
                     state = HandlerState.SUCCEEDED
                 elif request == "LIVESTREAM":
-                    self.currHandler
+                    self.currHandler = LivestreamHandler()
                 
 
         # Else let current handler handle request
@@ -223,6 +224,9 @@ class ServerProgram:
         if extraInfo:
             a = len(extraInfo)
         print(request, data, a)
+
+        if request == "SHUTDOWN" and state == HandlerState.SUCCEEDED:
+            return ServerProgram.QUIT_PROGRAM
 
         if state == HandlerState.SUCCEEDED:
             self.SendMessage("SUCCEEDED", extraInfo)

@@ -45,11 +45,12 @@ def SendMessage(sock, string, binaryData=None):
     return False
 
 class LivestreamHandler():
-    def __init__(self, hostSocket: socket.socket, scrHandler: ScreenHandler):
+    def __init__(self, serverProgram, hostSocket: socket.socket, scrHandler: ScreenHandler):
         self.screenHandler = scrHandler
         self.hostSocket = hostSocket
         self.livestreamThread = None
         self.livestreamEvent = None
+        self.serverProgram = serverProgram
         pass
 
     def HandleMessageFault(self):
@@ -99,6 +100,8 @@ class LivestreamHandler():
 
             waitTime = targetTime - elapsed if targetTime >= elapsed else 0.0
             time.sleep(waitTime)
+
+        liveSocket.close()
 
 if __name__ == "__main__":
     DEBUG = True
