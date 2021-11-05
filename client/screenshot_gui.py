@@ -110,11 +110,10 @@ class ScreenShotUI(RequestUI):
         pass
 
     def OnExitGUI(self):
-        if self:
-            self.CleanUp()
-            self.close()
-            self.parentWindow.HandleChildUIClose(self.baseRequest)
-            self.parentWindow.show()
+        self.CleanUp()
+        self.close()
+        self.parentWindow.HandleChildUIClose(self.baseRequest)
+        self.parentWindow.show()
 
 if __name__ == '__main__':
     from os import environ

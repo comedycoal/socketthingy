@@ -63,7 +63,7 @@ class LivestreamUI(RequestUI):
         self.streaming_button.setFont(font)
         self.streaming_button.setStyleSheet("background-color: rgb(224, 237, 255)")
         self.streaming_button.setObjectName("streaming_button")
-        self.streaming_button.setText(QCoreApplication.translate("MainWindow", "Streaming"))
+        self.streaming_button.setText(QCoreApplication.translate("MainWindow", "Xem"))
 
         self.stop_button = QPushButton(clicked = lambda: self.onStopLivestream())
         font = QtGui.QFont()
@@ -72,7 +72,7 @@ class LivestreamUI(RequestUI):
         self.stop_button.setFont(font)
         self.stop_button.setStyleSheet("background-color: rgb(224, 237, 255)")
         self.stop_button.setObjectName("stop_button")
-        self.stop_button.setText(QCoreApplication.translate("MainWindow", "Stop"))
+        self.stop_button.setText(QCoreApplication.translate("MainWindow", "Dừng"))
 
         self.imageView = QLabel()
         self.imageView.setStyleSheet("background-color: rgb(224, 237, 255)")
@@ -176,6 +176,10 @@ class LivestreamUI(RequestUI):
     def ShowWindow(self):
         self.setupUI()
         self.show()
+
+    def CleanUp(self):
+        self.onStopLivestream()
+        return super().CleanUp()
 
 if __name__ == '__main__':
     from os import environ

@@ -34,12 +34,11 @@ class RequestUI(QtWidgets.QWidget):
         return True
 
     def OnExitGUI(self):
+        self.CleanUp()
         state = self.MakeFinishRequest()
-        if self:
-            self.CleanUp()
-            self.close()
-            self.parentWindow.HandleChildUIClose(self.baseRequest)
-            self.parentWindow.show()
+        self.close()
+        self.parentWindow.HandleChildUIClose(self.baseRequest)
+        self.parentWindow.show()
 
     def MakeBaseRequest(self):
         state, _ = self.client.MakeRequest(self.baseRequest)
