@@ -52,7 +52,7 @@ class LivestreamHandler():
     def HandleMessageFault(self):
         pass
 
-    def Execute(self, reqCode:str, data:str):
+    def Execute(self, reqCode, data):
         try:
             if reqCode == "START":
                 self.livestreamThread = threading.Thread(target=self.Livestream, args=(self.hostSocket,))

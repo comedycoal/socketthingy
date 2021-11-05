@@ -33,7 +33,7 @@ class RegistryHandler:
     def __init__(self):
         pass
 
-    def Execute(self, reqCode:str, data:str):
+    def Execute(self, reqCode, data):
         try:
             extraData = ""
             if reqCode == "REGFILE":

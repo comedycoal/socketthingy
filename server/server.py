@@ -111,7 +111,7 @@ class ServerProgram:
                     chunks.append(message)
 
                 message = b''.join(chunks)
-                return message.decode(FORMAT)
+                return message
         except Exception as e:
             traceback.print_exc()
 
@@ -148,7 +148,7 @@ class ServerProgram:
 
         return False
 
-    def HandleRequest(self, requestString):
+    def HandleRequest(self, byteRequest):
         '''
         Handle request sent by client.
         Request is handled, then passed to SendMessage to send a reply with appropriate data to client, this step is blocking.
@@ -158,12 +158,12 @@ class ServerProgram:
             int: either ServerProgram.CONTINUE or ServerProgram.QUIT_PROGRAM
         '''
         immediate = False
-        request, data = self.SplitRequest(requestString)
+        request, data = self.SplitRequest(byteRequest)
 
         state = HandlerState.INVALID
         extraInfo = None
 
-        print(request, data)
+        print(request, data if len(data) < 256 else len(data))
         # FINISH request exits the current handler
         # EXIT request finishes the program
         if request == "FINISH":
@@ -207,6 +207,8 @@ class ServerProgram:
 
         # Else let current handler handle request
         else:
+            if type(self.currHandler) != DirectoryHandler or request != "TRANSFER":
+                data = str(data)
             state, extraInfo = self.currHandler.Execute(request, data)
 
         if self.currHandler and immediate:
@@ -228,20 +230,20 @@ class ServerProgram:
 
         return ServerProgram.CONTINUE_PROGRAM
 
-    def SplitRequest(self, request):
+    def SplitRequest(self, byteRequest):
         '''
-        Split a string request into 2 part: base request and extraData
+        Split a byteRequest request into 2 part: base request and extraData
         Parameters:
-            request (str): a string request
+            byteRequest (bytes): a string request
         Returns:
-            (str | None, str | None): 2 strings if request is splitable, 1 string if not and (None, None) if request is empty
+            (str | None, bytes | None): 2 strings if request is splitable, 1 string if not and (None, None) if request is empty
         '''
-        request = request.strip()
-        a = request.split(" ", 1)
+        byteRequest = byteRequest.strip()
+        a = byteRequest.split(b' ', 1)
         if len(a) == 2:
-            return a[0], a[1]
+            return str(a[0]), a[1]
         elif len(a) == 1:
-            return a[0], None
+            return str(a[0]), None
         else:
             return None, None
 

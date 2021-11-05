@@ -2,6 +2,7 @@ from handler_state import HandlerState
 from pathlib import Path, WindowsPath, PosixPath
 import os
 import string
+import socket
 import shutil
 import json
 import traceback
@@ -102,7 +103,11 @@ class DirectoryHandler():
         assert not dest.exists(), str(dest) + " already exists."
         os.rename(src, dest)
 
-    def Execute(self, reqCode:str, data:str):
+    def ReceiveFile(self, dest: Path, data):
+        with open(dest, "wb") as f:
+            f.write(data)
+
+    def Execute(self, reqCode, data):
         try:
             extraData = ""
             if reqCode == "INIT":
@@ -131,6 +136,15 @@ class DirectoryHandler():
                 src = Split(data)
                 assert len(src) >= 1
                 self.Delete([Path(x) for x in src])
+            elif reqCode == "TRANSFER":
+                dest_start = data.find(b'"')
+                assert dest_start == 0, "Wrong data format"
+                dest_end = data.find(b'"', dest_start + 1)
+                assert dest_end != -1, "Wrong data format"
+                dest = Split(data[dest_start: dest_end+1].decode('utf-8'))[0]
+                data = data[dest_end+1+1:]
+                self.ReceiveFile(Path(dest), data)
+                pass
             else:
                 return HandlerState.INVALID, None
 
@@ -142,4 +156,12 @@ class DirectoryHandler():
         pass
 
 if __name__ == "__main__":
-    pass
+    a = DirectoryHandler()
+    b = None
+    with open("README.docx", "rb") as f:
+        f.seek(0,2)
+        l = f.tell()
+        f.seek(0,0)
+        b = f.read(l)
+    b = b'"README2.docx" ' + b
+    a.Execute("TRANSFER", b)
