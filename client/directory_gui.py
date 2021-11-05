@@ -8,12 +8,18 @@ from PySide2.QtGui import *
 from PySide2.QtWidgets import *
 
 from client import ClientState
+import json
 from request_gui import Request
 import client
 
 class DirectoryUI(Request):
     def __init__(self, parent, client):
         super().__init__(parent, client, 'DIRECTORY')
+        self.listIndex = []
+        self.request_cut = "CUT"
+        self.request_copy = "COPY"
+        self.cut_index = []
+        self.copy_index = []
 
     def setupUI(self):
         self.setWindowTitle(QCoreApplication.translate("MainWindow", "Directory"))
@@ -24,7 +30,6 @@ class DirectoryUI(Request):
         font.setFamily("Helvetica")
         font.setPointSize(12)
         self.find_label.setFont(font)
-        # self.find_label.setStyleSheet("background-color: rgb(224, 237, 255)")
         self.find_label.setObjectName("find_label")
         self.find_label.setText(QCoreApplication.translate("MainWindow","Find:"))
 
@@ -34,29 +39,11 @@ class DirectoryUI(Request):
         font.setFamily("Helvetica")
         font.setPointSize(12)
         self.txtFind.setFont(font)
-        # self.txtFind.setStyleSheet("background-color: rgb(224, 237, 255)")
         self.txtFind.setObjectName("txtFind")
 
-        self.model = QStandardItemModel(0, 3, self)
-        self.model.setHeaderData(0, Qt.Horizontal, "Tmp1")
-        self.model.setHeaderData(1, Qt.Horizontal, "Tmp2")
-        self.model.setHeaderData(2, Qt.Horizontal, "Tmp3")
-        self.model.insertRow(0)
-        self.model.setData(self.model.index(0, 0), "a")
-        self.model.setData(self.model.index(0, 1), "1")
-        self.model.setData(self.model.index(0, 2),"test1")
-        self.model.insertRow(0)
-        self.model.setData(self.model.index(0, 0), "c")
-        self.model.setData(self.model.index(0, 1), "3")
-        self.model.setData(self.model.index(0, 2),"test2")
-        self.model.insertRow(0)
-        self.model.setData(self.model.index(0, 0), "b")
-        self.model.setData(self.model.index(0, 1), "0")
-        self.model.setData(self.model.index(0, 2),"test3")
-        self.proxy_model = QSortFilterProxyModel(recursiveFilteringEnabled = True)
-        self.proxy_model.setSourceModel(self.model)
-        self.treeView = self.createProcessTree(self.proxy_model)
-        # self.viewProcessTree()
+        self.createProcessModel()
+        self.treeView = QTreeView()
+        self.createProcessTree()
 
         findLayout = QHBoxLayout()
         findLayout.addWidget(self.find_label)
@@ -73,75 +60,84 @@ class DirectoryUI(Request):
 
         self.setLayout(mainLayout)
 
-    def createProcessTree(self, model):
-        treeView = QTreeView()
-        treeView.setModel(model)
-        treeView.setColumnWidth(0, 140)
-        treeView.setAlternatingRowColors(True)
-        treeView.setSortingEnabled(True)
-        treeView.setContextMenuPolicy(Qt.CustomContextMenu)
-        treeView.customContextMenuRequested.connect(self.showContextMenu)
-        return treeView
+    def createProcessModel(self):
+        state, rawdata = self.client.MakeRequest("VIEW \"D:\\\"")
+        if state != ClientState.SUCCEEDED:
+            QMessageBox.about(self, "", "Không thể tải dữ liệu")
+            return
 
-    # def createProcessModel(self, parent):
-    #     state, rawdata = self.client.MakeRequest('FETCH')
-    #     if state != ClientState.SUCCEEDED:
-    #         QMessageBox.about(self, "", "Không thể tải dữ liệu")
-    #         return
+        self.model = QStandardItemModel(0, 1)
 
-    #     model = QStandardItemModel(0, 3, parent)
-    #     model.setHeaderData(0, Qt.Horizontal, self.headings[0])
-    #     model.setHeaderData(1, Qt.Horizontal, self.headings[1])
-    #     model.setHeaderData(2, Qt.Horizontal, self.headings[2])
+        itemlist = json.loads(rawdata)
+        for item in itemlist:
+            self.model.insertRow(0)
+            node = QStandardItem(item)
+            self.model.setItem(0, node)
 
-    #     itemlist = json.loads(rawdata)
-    #     self.addItem(model, itemlist)
+        self.proxyModel = QSortFilterProxyModel(recursiveFilteringEnabled = True)
+        self.proxyModel.invalidateFilter()
+        self.proxyModel.setSourceModel(self.model)
 
-    #     return model
+    def createProcessTree(self):
+        self.treeView.setModel(self.proxyModel)
+        self.treeView.setAlternatingRowColors(True)
+        self.treeView.setSortingEnabled(True)
+        self.treeView.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.treeView.customContextMenuRequested.connect(self.showContextMenu)
+        self.treeView.clicked.connect(self.onTreeViewClicked)
 
-    # def addItem(self, model, itemlist):
-    #     for item in itemlist:
-    #         model.insertRow(0)
-    #         model.setData(model.index(0, 0), item["name"])
-    #         model.setData(model.index(0, 1), item["pid"])
-    #         model.setData(model.index(0, 2), item["num_threads"])
+    def addItemToModel(self, index):
+        filePath = self.findFilePath(index)
+        state, rawdata = self.client.MakeRequest("VIEW " + filePath)
+        if state != ClientState.SUCCEEDED:
+            QMessageBox.about(self, "", "Không thể tải dữ liệu")
+            return
 
-    # def viewProcessTree(self):
-    #     if self.treeView.selectedIndexes():
-    #         items = self.treeView.selectedIndexes()[0]
-    #     else:
-    #         items = []
-    #     for item in items:
-    #         self.model.removeRow(item.row())
+        nameList = json.loads(rawdata)
+        root = self.model.itemFromIndex(index)
+        print("root:", root.row(),root.column())
+        if root.parent():
+            print("root_parent:", root.parent().row(),root.parent().column())
+        for item in nameList:
+            node = QStandardItem(item)
+            root.appendRow(node)
+            root.setChild(node.row(), node)
+            print("node:", node.column(), node.row())
+            print("parent_node:", node.parent().column(), node.parent().row())
 
-    #     self.model = self.createProcessModel(self)
-    #     self.treeView = self.createProcessTree(self.model)
+    def findFilePath(self, index):
+        tmp_index = index
+        filePath = "\""
+        folderList = []
+        while tmp_index.row() != -1 and tmp_index.column() != -1:
+            print("index truyen vao:", index.row(),index.column())
+            print("tmp_index:", tmp_index.row(),tmp_index.column())
+            folderList.append(tmp_index.data())
+            print("folderList:", folderList)
+            tmp_index = tmp_index.parent()
+        while folderList:
+            cur = folderList.pop()
+            filePath = filePath + cur
+            if folderList:
+                filePath = filePath + "\\"
+            print("filePath:", filePath)
+        filePath = filePath + "\""
+        print("filePath:", filePath)
+        return filePath
 
-    def onKill(self):
-        # index = self.treeView.selectedIndexes()[0]
-        # self.model.removeRow(index.row())
-
-        item = self.txtFind.text()
-        # item = self.findID(item)
-        self.RequestKill(item)
-        # self.viewProcessTree()
-
-    def onStart(self):
-        item = self.txtFind.text()
-        self.RequestStart(item)
-        # self.viewProcessTree()
+    def onTreeViewClicked(self, index):
+        print("index: ", index.row(), index.column())
+        source_index = self.proxyModel.mapToSource(index)
+        print("source index:", source_index.row(), source_index.column())
+        print("source_parent_index:", source_index.parent().row(), source_index.parent().column())
+        if source_index not in self.listIndex:
+            self.listIndex.append(source_index)
+            self.addItemToModel(source_index)
+        return source_index
 
     def onFind(self):
-        self.proxy_model.setFilterWildcard("*{}*".format(self.txtFind.text()))
-
-        # if items:
-        #     self.kill_button.setText(QCoreApplication.translate("MainWindow", "Kill"))
-        #     self.kill_button.clicked.disconnect()
-        #     self.kill_button.clicked.connect(self.onKill)
-        # else:
-        #     self.kill_button.setText(QCoreApplication.translate("MainWindow", "Start"))
-        #     self.kill_button.clicked.disconnect()
-        #     self.kill_button.clicked.connect(self.onStart)
+        self.proxyModel.setFilterWildcard("*{}*".format(self.txtFind.text()))
+        pass
 
     def showContextMenu(self, point):
         ix = self.treeView.indexAt(point)
@@ -153,33 +149,74 @@ class DirectoryUI(Request):
             menu.addAction("Rename")
             menu.addAction("Delete")
             action = menu.exec_(self.treeView.mapToGlobal(point))
+            tmp_index = self.treeView.indexAt(point)
+            index = self.proxyModel.mapToSource(tmp_index)
             if action:
                 if action.text() == "Copy":
+                    self.request_copy = self.request_copy + " " + self.findFilePath(index)
+                    self.copy_index.append(index)
+                    print("self.request_copy:", self.request_copy)
                     pass
                 if action.text() == "Cut":
+                    self.request_cut = self.request_cut + " " + self.findFilePath(index)
+                    self.cut_index.append(index)
+                    print("self.request_cut:", self.request_cut)
                     pass
                 if action.text() == "Patse":
-                    self.RequestCopy_Cut()
-                    pass
-                if action.text() == "Rename":
-                    self.RequestRename()
-                    pass
-                if action.text() == "Delete":
-                    self.RequestDelete()
-                    pass
+                    print("self.request_copy", self.request_copy)
+                    print("self.request_cut:", self.request_cut)
 
-    def RequestCopy_Cut(self, request):
-        state, _ = self.client.MakeRequest('COPY ' + request)
-        if state != client.ClientState.SUCCEEDED:
-            QMessageBox.about(self, "", "Error")
+                    self.RequestCopy_Cut(self.request_copy, index)
+                    self.RequestCopy_Cut(self.request_cut, index)
+                    self.request_cut = "CUT"
+                    self.request_copy = "COPY"
+
+                    root = self.model.itemFromIndex(index)
+                    while self.copy_index:
+                        ix = QStandardItem(self.copy_index.pop())
+                        it = ix.data()
+                        newitem = QStandardItem(it)
+                        root.appendRow(newitem)
+                        root.setChild(newitem.row(), newitem)
+                    while self.cut_index:
+                        ix = QStandardItem(self.cut_index.pop())
+                        it = ix.data()
+                        newitem = QStandardItem(it)
+                        root.appendRow(newitem)
+                        root.setChild(newitem.row(), newitem)
+                        self.model.removeRow(ix.row(), ix.parent())
+
+                if action.text() == "Rename":
+                    filePath = self.findFilePath(index)
+                    print("filePath:", filePath)
+                    self.treeView.edit(index)
+                    newName = index.data()
+                    newName = "\"" + newName + "\""
+                    self.RequestRename(filePath, newName)
+
+                if action.text() == "Delete":
+                    filepath = self.findFilePath(index)
+                    self.model.removeRow(index.row(), index.parent())
+                    print("filepath:", filepath)
+                    self.RequestDelete(filepath)
+
+    def RequestCopy_Cut(self, request:str, index:QModelIndex):
+        if len(request) > 4:
+            endPath = self.findFilePath(index)
+            request = request + " " + endPath
+            print("request:", request)
+
+            state, _ = self.client.MakeRequest(request)
+            if state != client.ClientState.SUCCEEDED:
+                QMessageBox.about(self, "", "Error")
 
     def RequestDelete(self, path):
-        state, _ = self.client.MakeRequest('DELETE ' + path)
+        state, _ = self.client.MakeRequest("DELETE " + path)
         if state != client.ClientState.SUCCEEDED:
             QMessageBox.about(self, "", "Error")
 
     def RequestRename(self, path, name):
-        state, _ = self.client.MakeRequest('CUT ' + path + ' ' + name)
+        state, _ = self.client.MakeRequest("RENAME " + path + " " + name)
         if state != client.ClientState.SUCCEEDED:
             QMessageBox.about(self, "", "Error")
 

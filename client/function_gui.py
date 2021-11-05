@@ -2,7 +2,7 @@ from os import close
 from posixpath import expanduser
 import sys
 from PySide2 import QtCore, QtGui, QtWidgets
-from PySide2.QtWidgets import QMessageBox, QPushButton, QVBoxLayout
+from PySide2.QtWidgets import QMessageBox, QPushButton, QVBoxLayout, QGridLayout
 
 from client import ClientState
 from client import ClientProgram
@@ -42,7 +42,6 @@ class FunctionUI(QtWidgets.QWidget):
         super().__init__()
         self.parentWindow = parentWindow
         self.clientProgram = clientProgram
-        self.handlers = dict()
 
     def closeEvent(self, event: QtGui.QCloseEvent) -> None:
         close = QMessageBox.question(self, "Thoát", "Bạn chắc chắn muốn thoát?",
@@ -107,8 +106,7 @@ class FunctionUI(QtWidgets.QWidget):
     def setupUI(self):
         _translate = QtCore.QCoreApplication.translate
         self.setWindowTitle(_translate("MainWindow", "Function"))
-        # self.resize(400,400)
-        self.setFixedSize(300,300)
+        self.setFixedSize(300,210)
 
         self.function_label = QtWidgets.QLabel()
         font = QtGui.QFont()
@@ -166,22 +164,50 @@ class FunctionUI(QtWidgets.QWidget):
         self.logout_button.clicked.connect(self.onLogOut)
 
 
-        QtCore.QMetaObject.connectSlotsByName(self)
-        layout = QVBoxLayout()
-        layout.addWidget(self.function_label)
 
-        layout.addWidget(self.input_pack.button)
-        layout.addWidget(self.screenshot_pack.button)
-        layout.addWidget(self.streaming_pack.button)
-        layout.addWidget(self.directory_pack.button)
-        layout.addWidget(self.process_pack.button)
-        layout.addWidget(self.application_pack.button)
+        layout1 = QVBoxLayout()
+        layout1.addWidget(self.screenshot_pack.button)
+        layout1.addSpacing(5)
+        layout1.addWidget(self.streaming_pack.button)
+        layout1.addSpacing(5)
 
-        layout.addWidget(self.info_button)
-        layout.addWidget(self.shutdown_button)
-        layout.addWidget(self.logout_button)
+        layout2 = QVBoxLayout()
+        layout2.addWidget(self.input_pack.button)
+        layout2.addSpacing(5)
+        layout2.addWidget(self.directory_pack.button)
+        layout2.addSpacing(5)
 
-        self.setLayout(layout)
+        layout3 = QVBoxLayout()
+        layout3.addWidget(self.process_pack.button)
+        layout3.addSpacing(5)
+        layout3.addWidget(self.application_pack.button)
+
+        layout4t = QGridLayout()
+        layout4t.setHorizontalSpacing(5)
+        layout4t.addWidget(self.logout_button, 0, 0)
+        layout4t.addWidget(self.shutdown_button, 0, 1)
+
+        layout4 = QVBoxLayout()
+        layout4.addWidget(self.info_button)
+        layout4.addSpacing(5)
+        layout4.addItem(layout4t)
+
+        buttonLayout = QGridLayout()
+        buttonLayout.setHorizontalSpacing(15)
+        buttonLayout.setVerticalSpacing(10)
+        buttonLayout.addItem(layout1, 0, 0)
+        buttonLayout.addItem(layout2, 0, 1)
+        buttonLayout.addItem(layout3, 1, 0)
+        buttonLayout.addItem(layout4, 1, 1)
+
+        tmp = QtWidgets.QWidget(self)
+        tmp.setStyleSheet("background-color: rgb(124, 237, 150)")
+
+        mainLayout = QVBoxLayout(tmp)
+        mainLayout.addWidget(self.function_label)
+        mainLayout.addItem(buttonLayout)
+
+        self.setLayout(mainLayout)
 
 if __name__ == '__main__':
     from os import environ

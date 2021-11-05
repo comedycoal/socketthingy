@@ -13,11 +13,9 @@ FORMAT = "utf-8"
 def SendMessage(sock, string, binaryData=None):
     '''
     Send a message to client
-
     Parameters:
         string (str): the request
         binaryData (bytes, None): additional data in binary form, will be attatched to the request, separate by a single b' '
-
     Returns:
         True: if the message is sent properly
         False: if any errors occurs
@@ -84,7 +82,7 @@ class LivestreamHandler():
 
         start = time.perf_counter()
         while not self.livestreamEvent.is_set():
-            w, h, data = self.screenHandler.TakeScreenshotAsBytes(640, 480)
+            w, h, data = self.screenHandler.TakeScreenshotAsBytes(960, 540)
             state = SendMessage(liveSocket, str(w) + " " + str(h) + " " + str(frame+1), data)
             if not state:
                 self.HandleMessageFault()
@@ -102,4 +100,3 @@ if __name__ == "__main__":
     DEBUG = True
     a = ScreenHandler()
     m, n = a.Execute("", "")
-

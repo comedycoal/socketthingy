@@ -18,6 +18,8 @@ class ClientUI(QtWidgets.QWidget):
                                     ("Kết nối vẫn còn hiệu lực. " if self.clientProgram.connected else "") + "Bạn chắc chắn muốn thoát?",
                                     QMessageBox.Yes | QMessageBox.No)
         if close == QMessageBox.Yes:
+            self.Disconnect()
+            self.close()
             event.accept()
             self.close()
         else:

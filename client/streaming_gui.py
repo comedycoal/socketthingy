@@ -57,8 +57,8 @@ class LivestreamUI(Request):
 
     def setupUI(self):
         self.setWindowTitle(QCoreApplication.translate("MainWindow", "ScreenShot"))
-        self.resize(640,520)
-
+        self.setFixedSize(984,580)
+        
         self.streaming_button = QPushButton(clicked = lambda:self.onLivestream())
         font = QtGui.QFont()
         font.setFamily("Helvetica")
@@ -82,14 +82,13 @@ class LivestreamUI(Request):
         self.imageView.setObjectName("imageView")
 
         button_layout = QHBoxLayout()
-        button_layout.addSpacing(100)
+        button_layout.addSpacing(300)
         button_layout.addWidget(self.streaming_button)
-        button_layout.addSpacing(10)
+        button_layout.addSpacing(20)
         button_layout.addWidget(self.stop_button)
-        button_layout.addSpacing(100)
+        button_layout.addSpacing(300)
 
         mainLayout = QVBoxLayout()
-        mainLayout.addStretch(0)
         mainLayout.addWidget(self.imageView)
         mainLayout.addItem(button_layout)
         self.setLayout(mainLayout)

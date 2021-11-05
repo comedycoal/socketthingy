@@ -122,7 +122,7 @@ class InputUI(Request):
         self.keyBoxView.setReadOnly(True)
 
     def onLock(self):
-        state, _ = self.client.MakeRequest("LOCK")
+        state, _ = self.client.MakeRequest("LOCK 10")
         if state == ClientState.SUCCEEDED:
             self.putTextWithNewLine('Keyboard locked')
             self.lock_button.setText(QCoreApplication.translate("InputWindow", "Unlock"))
