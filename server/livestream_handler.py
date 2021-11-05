@@ -75,7 +75,7 @@ class LivestreamHandler():
         # accept the coming connection from client
         liveSocket, address = hostSocket.accept()
 
-        TARGET_FPS = 60
+        TARGET_FPS = 30
         TIME_FRAME = 1 / TARGET_FPS
 
         frame = 0

@@ -1,9 +1,7 @@
-# -*- coding: utf-8 -*-
-
-import sys
 from PySide2 import QtCore, QtGui, QtWidgets
 from PySide2.QtWidgets import QMessageBox
 
+import sys
 from client import ClientProgram
 from function_gui import FunctionUI
 
@@ -80,7 +78,7 @@ class ClientUI(QtWidgets.QWidget):
         self.connect_button.setGeometry(QtCore.QRect(160, 150, 81, 41))
         font = QtGui.QFont()
         font.setFamily("Helvetica")
-        font.setPointSize(12)
+        font.setPointSize(11)
         self.connect_button.setFont(font)
         self.connect_button.setStyleSheet("background-color: rgb(224, 237, 255)")
         self.connect_button.setCheckable(False)

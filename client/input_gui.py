@@ -1,17 +1,12 @@
-from os import close
-from posixpath import expanduser
-import sys
-from tkinter.constants import S
 from PySide2.QtCore import *
 from PySide2 import QtGui, QtWidgets
 from PySide2.QtGui import *
 from PySide2.QtWidgets import *
 
 from client import ClientState
-from request_gui import Request
-import client
+from request_gui import RequestUI
 
-class InputUI(Request):
+class InputUI(RequestUI):
     def __init__(self, parent, client):
         super().__init__(parent, client, 'KEYLOG')
 
@@ -22,7 +17,7 @@ class InputUI(Request):
         self.hook_button = QPushButton(clicked = lambda:self.onHook())
         font = QtGui.QFont()
         font.setFamily("Helvetica")
-        font.setPointSize(12)
+        font.setPointSize(11)
         self.hook_button.setFont(font)
         self.hook_button.setStyleSheet("background-color: rgb(224, 237, 255)")
         self.hook_button.setObjectName("hook_button")
@@ -31,7 +26,7 @@ class InputUI(Request):
         self.print_button = QPushButton(clicked = lambda:self.onPrint())
         font = QtGui.QFont()
         font.setFamily("Helvetica")
-        font.setPointSize(12)
+        font.setPointSize(11)
         self.print_button.setFont(font)
         self.print_button.setStyleSheet("background-color: rgb(224, 237, 255)")
         self.print_button.setObjectName("print_button")
@@ -40,7 +35,7 @@ class InputUI(Request):
         self.clear_button = QPushButton(clicked = lambda: self.onClear())
         font = QtGui.QFont()
         font.setFamily("Helvetica")
-        font.setPointSize(12)
+        font.setPointSize(11)
         self.clear_button.setFont(font)
         self.clear_button.setStyleSheet("background-color: rgb(224, 237, 255)")
         self.clear_button.setObjectName("clear_button")
@@ -49,7 +44,7 @@ class InputUI(Request):
         self.lock_button = QPushButton(clicked = lambda:self.onLock())
         font = QtGui.QFont()
         font.setFamily("Helvetica")
-        font.setPointSize(12)
+        font.setPointSize(11)
         self.lock_button.setFont(font)
         self.lock_button.setStyleSheet("background-color: rgb(224, 237, 255)")
         self.lock_button.setObjectName("lock_button")
@@ -58,7 +53,7 @@ class InputUI(Request):
         self.keyBoxView = QTextEdit()
         font = QtGui.QFont()
         font.setFamily("Helvetica")
-        font.setPointSize(12)
+        font.setPointSize(11)
         self.keyBoxView.setFont(font)
         self.keyBoxView.setAlignment(Qt.AlignLeft | Qt.AlignTop)
         self.keyBoxView.setObjectName("keyBoxView")
@@ -156,6 +151,8 @@ class InputUI(Request):
 
 if __name__ == '__main__':
     from os import environ
+    import sys
+    import client
 
     def suppress_qt_warnings():
         environ["QT_DEVICE_PIXEL_RATIO"] = "0"
@@ -167,7 +164,7 @@ if __name__ == '__main__':
 
     app = QtWidgets.QApplication(sys.argv)
     tmp = client.ClientProgram()
-    demo = InputUI(None)
+    demo = InputUI(None, tmp)
     demo.setupUI()
     demo.ShowWindow() 
     sys.exit(app.exec_())

@@ -1,24 +1,21 @@
-from os import close
-
-from posixpath import expanduser
-import sys
-import threading
-import socket
-from queue import Queue
-from tkinter.constants import S
 from PySide2.QtCore import *
 from PySide2 import QtGui, QtWidgets
 from PySide2.QtGui import *
 from PySide2.QtWidgets import *
 from PIL import Image, ImageQt
+
+import sys
+import threading
+import socket
+from queue import Queue
 import traceback
 import time
 
+from client import ClientState
+from request_gui import RequestUI
+
 HEADER = 64
 FORMAT = 'utf-8'
-
-from client import ClientState
-from request_gui import Request
 
 def ReceiveMessage(sock):
     '''
@@ -45,7 +42,7 @@ def ReceiveMessage(sock):
     
         return None
 
-class LivestreamUI(Request):
+class LivestreamUI(RequestUI):
     def __init__(self, parent, client):
         super().__init__(parent, client, 'LIVESTREAM')
         self.clientProgram = client
@@ -127,7 +124,7 @@ class LivestreamUI(Request):
         self.renderThread.start()
 
     def RenderToImageView(self):
-        TARGET_FPS = 60
+        TARGET_FPS = 30
         TIME_FRAME = 1 / TARGET_FPS
 
         target_frame = 1

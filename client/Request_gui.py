@@ -1,17 +1,16 @@
 from PySide2 import QtGui, QtWidgets
-from client import ClientState
-from typing import Text
-import client
 
-class Request(QtWidgets.QWidget):
-    def __init__(self, parentWindow, clientProgram:client.ClientProgram, baseRequest:str):
+from client import ClientState, ClientProgram
+
+class RequestUI(QtWidgets.QWidget):
+    def __init__(self, parentWindow, clientProgram:ClientProgram, baseRequest:str):
         super().__init__()
         self.parentWindow = parentWindow
         self.client = clientProgram
         self.baseRequest = baseRequest
 
     def closeEvent(self, event: QtGui.QCloseEvent) -> None:
-        close = QtWidgets.QMessageBox.question(self, "Thoát", "Bạn chắc chắn muốn thoát?", 
+        close = QtWidgets.QMessageBox.question(self, "Thoát", "Bạn chắc chắn muốn thoát?",
                                     QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
         if close == QtWidgets.QMessageBox.Yes:
             self.OnExitGUI()

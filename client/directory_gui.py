@@ -1,18 +1,13 @@
-from os import close
-from posixpath import expanduser
-import sys
-from tkinter.constants import S
 from PySide2.QtCore import *
 from PySide2 import QtGui, QtWidgets
 from PySide2.QtGui import *
 from PySide2.QtWidgets import *
 
 from client import ClientState
+from request_gui import RequestUI
 import json
-from request_gui import Request
-import client
 
-class DirectoryUI(Request):
+class DirectoryUI(RequestUI):
     def __init__(self, parentWindow, client):
         super().__init__(parentWindow, client, 'DIRECTORY')
         self.listIndex = []
@@ -213,17 +208,17 @@ class DirectoryUI(Request):
             print("request:", request)
 
             state, _ = self.client.MakeRequest(request)
-            if state != client.ClientState.SUCCEEDED:
+            if state != ClientState.SUCCEEDED:
                 QMessageBox.about(self, "", "Error")
 
     def RequestDelete(self, path):
         state, _ = self.client.MakeRequest("DELETE " + path)
-        if state != client.ClientState.SUCCEEDED:
+        if state != ClientState.SUCCEEDED:
             QMessageBox.about(self, "", "Error")
 
     def RequestRename(self, path, name):
         state, _ = self.client.MakeRequest("RENAME " + path + " " + name)
-        if state != client.ClientState.SUCCEEDED:
+        if state != ClientState.SUCCEEDED:
             QMessageBox.about(self, "", "Error")
 
     def ShowWindow(self):
@@ -233,6 +228,8 @@ class DirectoryUI(Request):
 
 if __name__ == '__main__':
     from os import environ
+    import sys
+    import client
 
     def suppress_qt_warnings():
         environ["QT_DEVICE_PIXEL_RATIO"] = "0"
@@ -243,7 +240,6 @@ if __name__ == '__main__':
     suppress_qt_warnings()
 
     app = QtWidgets.QApplication(sys.argv)
-    demo = DirectoryUI(None)
-    demo.setupUI()
-    demo.ShowWindow() 
+    demo = DirectoryUI(None, client.ClientProgram())
+    demo.ShowWindow()
     sys.exit(app.exec_())

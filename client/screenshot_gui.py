@@ -1,8 +1,3 @@
-from os import close
-
-from posixpath import expanduser
-import sys
-from tkinter.constants import S
 from PySide2.QtCore import *
 from PySide2 import QtGui, QtWidgets
 from PySide2.QtGui import *
@@ -10,9 +5,9 @@ from PySide2.QtWidgets import *
 from PIL import Image, ImageQt
 
 from client import ClientState
-from request_gui import Request
+from request_gui import RequestUI
 
-class ScreenShotUI(Request):
+class ScreenShotUI(RequestUI):
     def __init__(self, parent, client):
         super().__init__(parent, client, 'SCREENSHOT')
         self.image = None
@@ -123,6 +118,8 @@ class ScreenShotUI(Request):
 
 if __name__ == '__main__':
     from os import environ
+    import sys
+    import client
 
     def suppress_qt_warnings():
         environ["QT_DEVICE_PIXEL_RATIO"] = "0"
@@ -133,7 +130,7 @@ if __name__ == '__main__':
     suppress_qt_warnings()
 
     app = QtWidgets.QApplication(sys.argv)
-    demo = ScreenShotUI(None)
+    demo = ScreenShotUI(None, client.ClientProgram())
     demo.setupUI()
     demo.ShowWindow() 
     sys.exit(app.exec_())

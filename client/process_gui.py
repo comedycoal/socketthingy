@@ -1,18 +1,13 @@
-from os import close
-from posixpath import expanduser
-import sys
-from tkinter.constants import S
 from PySide2.QtCore import *
 from PySide2 import QtGui, QtWidgets
 from PySide2.QtGui import *
 from PySide2.QtWidgets import *
 
 from client import ClientState
+from request_gui import RequestUI
 import json
-from request_gui import Request
-import client
 
-class ProcessUI(Request):
+class ProcessUI(RequestUI):
     def __init__(self, parent, client):
         super().__init__(parent, client, 'PROCESS')
         self.windowName = "Process"
@@ -25,7 +20,7 @@ class ProcessUI(Request):
         self.find_label = QLabel()
         font = QtGui.QFont()
         font.setFamily("Helvetica")
-        font.setPointSize(12)
+        font.setPointSize(11)
         self.find_label.setFont(font)
         self.find_label.setObjectName("find_label")
         self.find_label.setText(QCoreApplication.translate("MainWindow","Find:"))
@@ -34,7 +29,7 @@ class ProcessUI(Request):
         self.txtFind.textChanged[str].connect(self.onFind)
         font = QtGui.QFont()
         font.setFamily("Helvetica")
-        font.setPointSize(12)
+        font.setPointSize(11)
         self.txtFind.setFont(font)
         self.txtFind.setObjectName("txtFind")
 
@@ -45,7 +40,7 @@ class ProcessUI(Request):
         self.kill_button = QtWidgets.QPushButton(clicked = lambda:self.onKill())
         font = QtGui.QFont()
         font.setFamily("Helvetica")
-        font.setPointSize(12)
+        font.setPointSize(11)
         self.kill_button.setFont(font)
         self.kill_button.setStyleSheet("background-color: rgb(224, 237, 255)")
         self.kill_button.setObjectName("kill_button")
@@ -54,7 +49,7 @@ class ProcessUI(Request):
         self.reload_button = QtWidgets.QPushButton(self, clicked = lambda:self.viewProcessTree())
         font = QtGui.QFont()
         font.setFamily("Helvetica")
-        font.setPointSize(12)
+        font.setPointSize(11)
         self.reload_button.setFont(font)
         self.reload_button.setStyleSheet("background-color: rgb(224, 237, 255)")
         self.reload_button.setObjectName("reload_button")
@@ -63,7 +58,7 @@ class ProcessUI(Request):
         self.name_start_label = QLabel()
         font = QtGui.QFont()
         font.setFamily("Helvetica")
-        font.setPointSize(12)
+        font.setPointSize(11)
         self.name_start_label.setFont(font)
         self.name_start_label.setObjectName("name_start_label")
         self.name_start_label.setText(QCoreApplication.translate("MainWindow","Name of Program:"))
@@ -72,14 +67,14 @@ class ProcessUI(Request):
         self.name_start_box = QLineEdit()
         font = QtGui.QFont()
         font.setFamily("Helvetica")
-        font.setPointSize(12)
+        font.setPointSize(11)
         self.name_start_box.setFont(font)
         self.name_start_box.setObjectName("name_start_box")
 
         self.start_button = QtWidgets.QPushButton(self, clicked = lambda:self.onStart())
         font = QtGui.QFont()
         font.setFamily("Helvetica")
-        font.setPointSize(12)
+        font.setPointSize(11)
         self.start_button.setFont(font)
         self.start_button.setStyleSheet("background-color: rgb(224, 237, 255)")
         self.start_button.setObjectName("start_button")
@@ -207,6 +202,8 @@ class ApplicationUI(ProcessUI):
 
 if __name__ == '__main__':
     from os import environ
+    import sys
+    import client
 
     def suppress_qt_warnings():
         environ["QT_DEVICE_PIXEL_RATIO"] = "0"
@@ -217,7 +214,6 @@ if __name__ == '__main__':
     suppress_qt_warnings()
 
     app = QtWidgets.QApplication(sys.argv)
-    demo = ApplicationUI(None)
-    demo.setupUI()
+    demo = ApplicationUI(None, client.ClientProgram())
     demo.ShowWindow() 
     sys.exit(app.exec_())

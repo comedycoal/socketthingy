@@ -1,6 +1,3 @@
-from os import close
-from posixpath import expanduser
-import sys
 from PySide2 import QtCore, QtGui, QtWidgets
 from PySide2.QtWidgets import QMessageBox, QPushButton, QVBoxLayout, QGridLayout
 
@@ -113,7 +110,7 @@ class FunctionUI(QtWidgets.QWidget):
     def setupUI(self):
         _translate = QtCore.QCoreApplication.translate
         self.setWindowTitle(_translate("MainWindow", "Function"))
-        self.setFixedSize(300,210)
+        self.setFixedSize(400,250)
 
         self.function_label = QtWidgets.QLabel()
         font = QtGui.QFont()
@@ -129,37 +126,37 @@ class FunctionUI(QtWidgets.QWidget):
 
         font = QtGui.QFont()
         font.setFamily("Helvetica")
-        font.setPointSize(12)
+        font.setPointSize(11)
         style ="background-color: rgb(224, 237, 255)"
 
         self.process_pack = RequestButtonPack(
             self,
             "PROCESS",
-            self.MakeButton(font, style, "process_button", _translate("MainWindow", "Process Running")))
+            self.MakeButton(font, style, "process_button", _translate("MainWindow", "Xem Process")))
 
         self.application_pack = RequestButtonPack(
             self,
             "APPLICATION",
-            self.MakeButton(font, style, "application_button", _translate("MainWindow", "App Running")))
+            self.MakeButton(font, style, "application_button", _translate("MainWindow", "Xem Ứng dụng")))
 
         self.input_pack = RequestButtonPack(
             self,
             "KEYLOG",
-            self.MakeButton(font, style, "input_button", _translate("MainWindow", "Input")))
+            self.MakeButton(font, style, "input_button", _translate("MainWindow", "Bàn phím")))
 
         self.screenshot_pack = RequestButtonPack(self,
             "SCREENSHOT",
-            self.MakeButton(font, style, "screenshot_button", _translate("MainWindow", "Screenshot")))
+            self.MakeButton(font, style, "screenshot_button", _translate("MainWindow", "Chụp màn hình")))
 
         self.streaming_pack = RequestButtonPack(
             self,
             "LIVESTREAM",
-            self.MakeButton(font, style, "streaming_button", _translate("MainWindow", "Stream")))
+            self.MakeButton(font, style, "streaming_button", _translate("MainWindow", "Xem live màn hình")))
 
         self.directory_pack = RequestButtonPack(
             self,
             "DIRECTORY",
-            self.MakeButton(font, style, "directory_button", _translate("MainWindow", "Directory")))
+            self.MakeButton(font, style, "directory_button", _translate("MainWindow", "Cây thư mục")))
 
         self.registry_pack = RequestButtonPack(
             self,
@@ -224,6 +221,7 @@ class FunctionUI(QtWidgets.QWidget):
 
 if __name__ == '__main__':
     from os import environ
+    import sys
 
     def suppress_qt_warnings():
         environ["QT_DEVICE_PIXEL_RATIO"] = "0"
@@ -234,7 +232,7 @@ if __name__ == '__main__':
     suppress_qt_warnings()
 
     app = QtWidgets.QApplication(sys.argv)
-    demo = FunctionUI(None)
+    demo = FunctionUI(None, ClientProgram())
     demo.setupUI()
     demo.show()
     sys.exit(app.exec_())

@@ -1,14 +1,10 @@
-from os import close
-from posixpath import expanduser
-import sys
-from tkinter.constants import S
 from PySide2.QtCore import *
 from PySide2 import QtGui, QtWidgets
 from PySide2.QtGui import *
 from PySide2.QtWidgets import *
 
 from client import ClientState
-from request_gui import Request
+from request_gui import RequestUI
 
 class ReactiveQLineEdit(QLineEdit):
     def __init__(self, normalStyle, forcedEditStyle):
@@ -45,7 +41,7 @@ class ReactiveQComboBox(QComboBox):
         self.setCurrentIndex(index)
         self.setStyleSheet(self.forcedEditStyle)
 
-class RegistryUI(Request):
+class RegistryUI(RequestUI):
     VALUE_FORCED_EDIT_STYLE = "color: green"
     VALUE_NORMAL_STYLE = "color: black"
 
@@ -298,6 +294,7 @@ class RegistryUI(Request):
 
 if __name__ == '__main__':
     from os import environ
+    import sys
     import client
 
     def suppress_qt_warnings():
