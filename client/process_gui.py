@@ -9,12 +9,12 @@ from PySide2.QtWidgets import *
 
 from client import ClientState
 import json
-from Request_gui import Request
+from request_gui import Request
 import client
 
 class ProcessUI(Request):
-    def __init__(self, client):
-        super().__init__(client, 'PROCESS')
+    def __init__(self, parent, client):
+        super().__init__(parent, client, 'PROCESS')
         self.windowName = "Process"
         self.headings = ('Process Name', 'Process ID', 'Thread Count')
 
@@ -198,8 +198,8 @@ class ProcessUI(Request):
 
 
 class ApplicationUI(ProcessUI):
-    def __init__(self, client):
-        super().__init__(client)
+    def __init__(self, parent, client):
+        super().__init__(parent, client)
         self.baseRequest = "APPLICATION"
         self.windowName = "Application"
         self.headings = ('Application Name', 'Process ID', 'Thread Count')

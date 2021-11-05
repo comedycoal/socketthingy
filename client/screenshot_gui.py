@@ -10,11 +10,11 @@ from PySide2.QtWidgets import *
 from PIL import Image, ImageQt
 
 from client import ClientState
-from Request_gui import Request
+from request_gui import Request
 
 class ScreenShotUI(Request):
-    def __init__(self, client):
-        super().__init__(client, 'SCREENSHOT')
+    def __init__(self, parent, client):
+        super().__init__(parent, client, 'SCREENSHOT')
         self.image = None
         pass
 
@@ -60,7 +60,7 @@ class ScreenShotUI(Request):
     def onStartGUI(self):
         self.ShowWindow()
 
-    def BytesToImage(self, rawdata:bytes):
+    def BytesToQImage(self, rawdata:bytes):
         split = rawdata.split(b' ', 2)
         w = int(split[0].decode("utf-8"))
         h = int(split[1].decode("utf-8"))
@@ -86,10 +86,10 @@ class ScreenShotUI(Request):
 
         try:
             self.image = self.BytesToQImage(rawdata)
-            self.imageView.setPixmap(QPixmap(ImageQt.ImageQt(self.image)))
+            self.imageView.setPixmap(QPixmap.fromImage(ImageQt.ImageQt(self.image)))
             return True
         except Exception as e:
-            QMessageBox.about(self, "", e)
+            QMessageBox.about(self, "", str(e))
             return False
         pass
 
@@ -108,6 +108,13 @@ class ScreenShotUI(Request):
         self.setupUI()
         self.show()
         pass
+
+    def OnExitGUI(self):
+        if self:
+            self.CleanUp()
+            self.close()
+            self.parentWindow.HandleChildUIClose(self.baseRequest)
+            self.parentWindow.show()
 
 if __name__ == '__main__':
     from os import environ

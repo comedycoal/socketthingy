@@ -4,8 +4,9 @@ from typing import Text
 import client
 
 class Request(QtWidgets.QWidget):
-    def __init__(self, clientProgram:client.ClientProgram, baseRequest:str):
+    def __init__(self, parentWindow, clientProgram:client.ClientProgram, baseRequest:str):
         super().__init__()
+        self.parentWindow = parentWindow
         self.client = clientProgram
         self.baseRequest = baseRequest
 
@@ -28,6 +29,7 @@ class Request(QtWidgets.QWidget):
             QtWidgets.QMessageBox.about(self, "", "Lỗi kết nối đến server")
             return False
 
+        self.parentWindow.hide()
         self.ShowWindow()
 
         return True
@@ -35,15 +37,21 @@ class Request(QtWidgets.QWidget):
     def OnExitGUI(self):
         state = self.MakeFinishRequest()
         if self:
-            self.destroy()
+            self.CleanUp()
+            self.close()
+            self.parentWindow.HandleChildUIClose(self.baseRequest)
+            self.parentWindow.show()
 
     def MakeBaseRequest(self):
         state, _ = self.client.MakeRequest(self.baseRequest)
-        return state, _ 
+        return state, _
 
     def MakeFinishRequest(self):
         state, _ = self.client.MakeRequest("FINISH")
         return state
 
     def ShowWindow(self):
+        pass
+
+    def CleanUp(self):
         pass

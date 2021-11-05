@@ -1,5 +1,6 @@
 import os
 import traceback
+import time
 from handler_state import HandlerState
 
 class ShutdownHandler:
@@ -12,7 +13,8 @@ class ShutdownHandler:
                 os.system("shutdown /s /t 3")
                 return HandlerState.SUCCEEDED, None
             elif (data == "L"):
-                os.system("shutdown /l /t 3")
+                time.sleep(3)
+                os.system("shutdown /l")
                 return HandlerState.SUCCEEDED, None
             else:
                 return HandlerState.INVALID, None

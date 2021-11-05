@@ -4,8 +4,8 @@ from client import ClientState
 from Request_gui import Request
 
 class Keystroke(Request):
-    def __init__(self, client):
-        super().__init__(client, "KEYLOG")
+    def __init__(self, parent: FunctionUI, client):
+        super().__init__(parent, client, "KEYLOG")
 
     def ShowWindow(self):
         self.MainWindow = tkinter.Tk()

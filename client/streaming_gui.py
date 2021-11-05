@@ -18,7 +18,7 @@ HEADER = 64
 FORMAT = 'utf-8'
 
 from client import ClientState
-from Request_gui import Request
+from request_gui import Request
 
 def ReceiveMessage(sock):
     '''
@@ -46,8 +46,8 @@ def ReceiveMessage(sock):
         return None
 
 class LivestreamUI(Request):
-    def __init__(self, client):
-        super().__init__(client, 'LIVESTREAM')
+    def __init__(self, parent, client):
+        super().__init__(parent, client, 'LIVESTREAM')
         self.clientProgram = client
         self.renderThread = None
         self.captureThread = None

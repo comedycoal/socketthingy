@@ -8,15 +8,15 @@ from PySide2.QtGui import *
 from PySide2.QtWidgets import *
 
 from client import ClientState
-from Request_gui import Request
+from request_gui import Request
 import client
 
 class InputUI(Request):
-    def __init__(self, client):
-        super().__init__(client, 'KEYLOG')
+    def __init__(self, parent, client):
+        super().__init__(parent, client, 'KEYLOG')
 
     def setupUI(self):
-        self.setWindowTitle(QCoreApplication.translate("MainWindow", "Keylog"))
+        self.setWindowTitle(QCoreApplication.translate("InputWindow", "Keylog"))
         self.resize(400,400)
 
         self.hook_button = QPushButton(clicked = lambda:self.onHook())
@@ -26,7 +26,7 @@ class InputUI(Request):
         self.hook_button.setFont(font)
         self.hook_button.setStyleSheet("background-color: rgb(224, 237, 255)")
         self.hook_button.setObjectName("hook_button")
-        self.hook_button.setText(QCoreApplication.translate("MainWindow", "Hook"))
+        self.hook_button.setText(QCoreApplication.translate("InputWindow", "Hook"))
 
         self.print_button = QPushButton(clicked = lambda:self.onPrint())
         font = QtGui.QFont()
@@ -35,7 +35,7 @@ class InputUI(Request):
         self.print_button.setFont(font)
         self.print_button.setStyleSheet("background-color: rgb(224, 237, 255)")
         self.print_button.setObjectName("print_button")
-        self.print_button.setText(QCoreApplication.translate("MainWindow", "Print"))
+        self.print_button.setText(QCoreApplication.translate("InputWindow", "Print"))
 
         self.clear_button = QPushButton(clicked = lambda: self.onClear())
         font = QtGui.QFont()
@@ -44,7 +44,7 @@ class InputUI(Request):
         self.clear_button.setFont(font)
         self.clear_button.setStyleSheet("background-color: rgb(224, 237, 255)")
         self.clear_button.setObjectName("clear_button")
-        self.clear_button.setText(QCoreApplication.translate("MainWindow", "Clear"))
+        self.clear_button.setText(QCoreApplication.translate("InputWindow", "Clear"))
 
         self.lock_button = QPushButton(clicked = lambda:self.onLock())
         font = QtGui.QFont()
@@ -53,7 +53,7 @@ class InputUI(Request):
         self.lock_button.setFont(font)
         self.lock_button.setStyleSheet("background-color: rgb(224, 237, 255)")
         self.lock_button.setObjectName("lock_button")
-        self.lock_button.setText(QCoreApplication.translate("MainWindow", "Lock"))
+        self.lock_button.setText(QCoreApplication.translate("InputWindow", "Lock"))
 
         self.keyBoxView = QTextEdit()
         font = QtGui.QFont()
@@ -83,7 +83,7 @@ class InputUI(Request):
         state, _ = self.client.MakeRequest("HOOK")
         if state == ClientState.SUCCEEDED:
             self.putTextWithNewLine('Hook đã được cài')
-            self.hook_button.setText(QCoreApplication.translate("MainWindow", "Unhook"))
+            self.hook_button.setText(QCoreApplication.translate("InputWindow", "Unhook"))
             self.hook_button.clicked.disconnect()
             self.hook_button.clicked.connect(self.onUnhook)
         else:
@@ -94,7 +94,7 @@ class InputUI(Request):
         state, _ = self.client.MakeRequest("UNHOOK")
         if state == ClientState.SUCCEEDED:
             self.putTextWithNewLine('Hook đã được gỡ')
-            self.hook_button.setText(QCoreApplication.translate("MainWindow", "Hook"))
+            self.hook_button.setText(QCoreApplication.translate("InputWindow", "Hook"))
             self.hook_button.clicked.disconnect()
             self.hook_button.clicked.connect(self.onHook)
         else:
@@ -125,7 +125,7 @@ class InputUI(Request):
         state, _ = self.client.MakeRequest("LOCK")
         if state == ClientState.SUCCEEDED:
             self.putTextWithNewLine('Keyboard locked')
-            self.lock_button.setText(QCoreApplication.translate("MainWindow", "Unlock"))
+            self.lock_button.setText(QCoreApplication.translate("InputWindow", "Unlock"))
             self.lock_button.clicked.disconnect()
             self.lock_button.clicked.connect(self.onUnlock)
         else:
@@ -136,7 +136,7 @@ class InputUI(Request):
         state, _ = self.client.MakeRequest("UNLOCK")
         if state == ClientState.SUCCEEDED:
             self.putTextWithNewLine('Keyboard unlocked')
-            self.lock_button.setText(QCoreApplication.translate("MainWindow", "Lock"))
+            self.lock_button.setText(QCoreApplication.translate("InputWindow", "Lock"))
             self.lock_button.clicked.disconnect()
             self.lock_button.clicked.connect(self.onLock)
         else:
@@ -147,6 +147,12 @@ class InputUI(Request):
         self.setupUI()
         self.show()
         pass
+
+    def CleanUp(self):
+        self.onUnhook()
+        self.onUnlock()
+        self.onClear()
+        return super().CleanUp()
 
 if __name__ == '__main__':
     from os import environ

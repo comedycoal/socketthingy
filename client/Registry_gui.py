@@ -5,13 +5,13 @@ from tkinter import filedialog
 import codecs
 from tkinter.messagebox import showinfo
 
-from Request_gui import Request
+from request_gui import Request
 from client import ClientState
 
 
 class Registry(Request):
-    def __init__(self, client):
-        super().__init__(client, "REGISTRY")
+    def __init__(self, parent, client):
+        super().__init__(parent, client, "REGISTRY")
 
     def ShowWindow(self):
         self.MainWindow = tkinter.Tk()
