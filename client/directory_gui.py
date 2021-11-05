@@ -13,8 +13,8 @@ from request_gui import Request
 import client
 
 class DirectoryUI(Request):
-    def __init__(self, parent, client):
-        super().__init__(parent, client, 'DIRECTORY')
+    def __init__(self, client):
+        super().__init__(client, 'DIRECTORY')
         self.listIndex = []
         self.request_cut = "CUT"
         self.request_copy = "COPY"
@@ -41,6 +41,9 @@ class DirectoryUI(Request):
         self.txtFind.setFont(font)
         self.txtFind.setObjectName("txtFind")
 
+        self.thumbnail = QLabel()
+        self.thumbnail.setText("Dir: ")
+
         self.createProcessModel()
         self.treeView = QTreeView()
         self.createProcessTree()
@@ -49,13 +52,13 @@ class DirectoryUI(Request):
         findLayout.addWidget(self.find_label)
         findLayout.addSpacing(10)
         findLayout.addWidget(self.txtFind)
+        self.find_label.hide()
+        self.txtFind.hide()
 
-        self.thumbnail = QLabel()
-        self.thumbnail.setText("Dir: ")
 
         mainLayout = QVBoxLayout()
-        mainLayout.addItem(findLayout)
-        mainLayout.addWidget(self.thumbnail)
+        # mainLayout.addItem(findLayout)
+        # mainLayout.addWidget(self.thumbnail)
         mainLayout.addWidget(self.treeView)
 
         self.setLayout(mainLayout)
@@ -67,6 +70,7 @@ class DirectoryUI(Request):
             return
 
         self.model = QStandardItemModel(0, 1)
+        self.thumbnail.setText("Dir:    D:")
 
         itemlist = json.loads(rawdata)
         for item in itemlist:
@@ -130,6 +134,8 @@ class DirectoryUI(Request):
         source_index = self.proxyModel.mapToSource(index)
         print("source index:", source_index.row(), source_index.column())
         print("source_parent_index:", source_index.parent().row(), source_index.parent().column())
+        path = self.findFilePath(source_index)
+        self.thumbnail.setText("Dir:    D:\\" + path.strip("\""))
         if source_index not in self.listIndex:
             self.listIndex.append(source_index)
             self.addItemToModel(source_index)
@@ -173,13 +179,13 @@ class DirectoryUI(Request):
 
                     root = self.model.itemFromIndex(index)
                     while self.copy_index:
-                        ix = QStandardItem(self.copy_index.pop())
+                        ix = self.copy_index.pop()
                         it = ix.data()
                         newitem = QStandardItem(it)
                         root.appendRow(newitem)
                         root.setChild(newitem.row(), newitem)
                     while self.cut_index:
-                        ix = QStandardItem(self.cut_index.pop())
+                        ix = self.cut_index.pop()
                         it = ix.data()
                         newitem = QStandardItem(it)
                         root.appendRow(newitem)
