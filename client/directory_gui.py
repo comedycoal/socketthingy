@@ -13,8 +13,8 @@ from request_gui import Request
 import client
 
 class DirectoryUI(Request):
-    def __init__(self, client):
-        super().__init__(client, 'DIRECTORY')
+    def __init__(self, parentWindow, client):
+        super().__init__(parentWindow, client, 'DIRECTORY')
         self.listIndex = []
         self.request_cut = "CUT"
         self.request_copy = "COPY"

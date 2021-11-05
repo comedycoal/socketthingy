@@ -58,7 +58,7 @@ class ProcessUI(Request):
         self.reload_button.setFont(font)
         self.reload_button.setStyleSheet("background-color: rgb(224, 237, 255)")
         self.reload_button.setObjectName("reload_button")
-        self.reload_button.setText(QCoreApplication.translate("MainWindow", "Reload"))
+        self.reload_button.setText(QCoreApplication.translate("MainWindow", "Refresh"))
 
         self.name_start_label = QLabel()
         font = QtGui.QFont()
@@ -145,11 +145,6 @@ class ProcessUI(Request):
             model.setData(model.index(0, 2), item["num_threads"])
 
     def viewProcessTree(self):
-        state, rawdata = self.client.MakeRequest('FETCH')
-        if state != ClientState.SUCCEEDED:
-            QMessageBox.about(self, "", "Không thể tải dữ liệu")
-            return
-        self.itemlist = json.loads(rawdata)
         self.model = self.createProcessModel()
         self.treeView.setModel(self.model)
 

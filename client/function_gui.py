@@ -19,6 +19,7 @@ class RequestButtonPack:
         self.parent = parent
         self.button = button
         self.requestUI = None
+        self.button.clicked.connect(lambda: None)
         self.Refresh()
 
     def Refresh(self):
@@ -35,6 +36,7 @@ class RequestButtonPack:
         elif self.identifier == "LIVESTREAM":
             self.requestUI = LivestreamUI(self.parent, self.parent.clientProgram)
 
+        self.button.clicked.disconnect()
         self.button.clicked.connect(self.requestUI.OnStartGUI)
 
 class FunctionUI(QtWidgets.QWidget):
@@ -100,7 +102,7 @@ class FunctionUI(QtWidgets.QWidget):
         elif identifier == "LIVESTREAM":
             pack = self.streaming_pack
 
-        self.streaming_pack.Refresh()
+        pack.Refresh()
 
 
     def setupUI(self):
@@ -162,7 +164,6 @@ class FunctionUI(QtWidgets.QWidget):
         self.info_button.clicked.connect(self.onShowMACAdress)
         self.shutdown_button.clicked.connect(self.onShutdown)
         self.logout_button.clicked.connect(self.onLogOut)
-
 
 
         layout1 = QVBoxLayout()

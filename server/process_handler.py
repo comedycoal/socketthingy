@@ -16,10 +16,8 @@ class ProcessHandler():
                 newData = self.FetchAndUpdate()
             elif reqCode == "KILL":
                 self.KillProcess(int(data))
-                newData = self.FetchAndUpdate()
             elif reqCode == "START":
                 self.StartProcess(data)
-                newData = self.FetchAndUpdate()
             else:
                 return HandlerState.INVALID, None
             return HandlerState.SUCCEEDED, json.dumps(newData).encode("utf-8")

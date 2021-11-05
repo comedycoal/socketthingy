@@ -27,7 +27,7 @@ class InputUI(Request):
         self.hook_button.setStyleSheet("background-color: rgb(224, 237, 255)")
         self.hook_button.setObjectName("hook_button")
         self.hook_button.setText(QCoreApplication.translate("InputWindow", "Hook"))
-
+        
         self.print_button = QPushButton(clicked = lambda:self.onPrint())
         font = QtGui.QFont()
         font.setFamily("Helvetica")
@@ -82,7 +82,7 @@ class InputUI(Request):
     def onHook(self):
         state, _ = self.client.MakeRequest("HOOK")
         if state == ClientState.SUCCEEDED:
-            self.putTextWithNewLine('Hook đã được cài')
+            self.putTextWithNewLine('Hook đã được gài')
             self.hook_button.setText(QCoreApplication.translate("InputWindow", "Unhook"))
             self.hook_button.clicked.disconnect()
             self.hook_button.clicked.connect(self.onUnhook)
@@ -122,7 +122,7 @@ class InputUI(Request):
         self.keyBoxView.setReadOnly(True)
 
     def onLock(self):
-        state, _ = self.client.MakeRequest("LOCK 10")
+        state, _ = self.client.MakeRequest("LOCK")
         if state == ClientState.SUCCEEDED:
             self.putTextWithNewLine('Keyboard locked')
             self.lock_button.setText(QCoreApplication.translate("InputWindow", "Unlock"))
