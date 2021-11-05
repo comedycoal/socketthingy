@@ -1,6 +1,7 @@
 from handler_state import HandlerState
 from pathlib import Path, WindowsPath, PosixPath
 import os
+import string
 import shutil
 import json
 import traceback
@@ -8,7 +9,7 @@ import traceback
 def PerformWalk(path):
     children = None
     for _, dirs, files in os.walk(path):
-        children = dirs + files
+        children = [(x, 1) for x in dirs]  + [(x, 0) for x in files]
         break
     return children
 
@@ -24,6 +25,9 @@ class DirectoryHandler():
 
     def SetRoot(self, path: Path):
         self.root = path
+
+    def Init(self):
+        return ['%s:' % d for d in string.ascii_uppercase if os.path.exists('%s:' % d)]
 
     def View(self, path: Path):
         if not os.path.isabs(path):
@@ -101,7 +105,10 @@ class DirectoryHandler():
     def Execute(self, reqCode:str, data:str):
         try:
             extraData = ""
-            if reqCode == "VIEW":
+            if reqCode == "INIT":
+                l = self.Init()
+                extraData = json.dumps(l)
+            elif reqCode == "VIEW":
                 data = data.strip('\"')
                 l = self.View(Path(data))
                 extraData = json.dumps(l)

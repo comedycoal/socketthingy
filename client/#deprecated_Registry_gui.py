@@ -273,6 +273,6 @@ class Registry(Request):
         pass
 
 if __name__ == "__main__":
-    a = Registry(None)
+    a = Registry(None, None)
     a.ShowWindow()
     

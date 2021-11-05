@@ -30,7 +30,8 @@ KEYLOG			- HOOK
 
 INFO <MACADDRESS,...>
 
-DIRECTORY		- VIEW "<abs_path>"
+DIRECTORY		- INIT
+				- VIEW "<abs_path>"
 				- COPY "<path1>" "<path2>"
 				- CUT "<path1>" "<path2>"
 				- DELETE "<abs_path>"
