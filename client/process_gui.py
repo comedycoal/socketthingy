@@ -9,7 +9,7 @@ from PySide2.QtWidgets import *
 
 from client import ClientState
 import json
-from Request_gui import Request
+from request_gui import Request
 import client
 
 class ProcessUI(Request):

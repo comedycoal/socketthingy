@@ -18,9 +18,9 @@ class ClientUI(QtWidgets.QWidget):
                                     ("Kết nối vẫn còn hiệu lực. " if self.clientProgram.connected else "") + "Bạn chắc chắn muốn thoát?",
                                     QMessageBox.Yes | QMessageBox.No)
         if close == QMessageBox.Yes:
+            self.Disconnect()
+            self.close()
             event.accept()
-            if self.clientProgram.connected:
-                self.clientProgram.Disconnect()
         else:
             event.ignore()
 
@@ -66,7 +66,7 @@ class ClientUI(QtWidgets.QWidget):
         self.IP_box.setFont(font)
         self.IP_box.setStyleSheet("background-color: rgb(246, 252, 255);")
         self.IP_box.setObjectName("IP_box")
-        self.IP_box.setText(_translate("MainWindow", "Nhập IP"))
+        self.IP_box.setText(_translate("MainWindow", "127.0.0.1"))
 
         self.port_box = QtWidgets.QLineEdit(self)
         self.port_box.setGeometry(QtCore.QRect(40, 150, 101, 41))
@@ -76,7 +76,7 @@ class ClientUI(QtWidgets.QWidget):
         self.port_box.setFont(font)
         self.port_box.setStyleSheet("background-color: rgb(246, 252, 255);")
         self.port_box.setObjectName("port_box")
-        self.port_box.setText(_translate("MainWindow", "Nhập port"))
+        self.port_box.setText(_translate("MainWindow", " 6666"))
 
         self.connect_button = QtWidgets.QPushButton(self, clicked = lambda:self.Connect())
         self.connect_button.setGeometry(QtCore.QRect(160, 150, 81, 41))

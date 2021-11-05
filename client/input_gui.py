@@ -8,7 +8,7 @@ from PySide2.QtGui import *
 from PySide2.QtWidgets import *
 
 from client import ClientState
-from Request_gui import Request
+from request_gui import Request
 import client
 
 class InputUI(Request):
@@ -122,7 +122,7 @@ class InputUI(Request):
         self.keyBoxView.setReadOnly(True)
 
     def onLock(self):
-        state, _ = self.client.MakeRequest("LOCK")
+        state, _ = self.client.MakeRequest("LOCK 10")
         if state == ClientState.SUCCEEDED:
             self.putTextWithNewLine('Keyboard locked')
             self.lock_button.setText(QCoreApplication.translate("MainWindow", "Unlock"))

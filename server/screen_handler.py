@@ -44,32 +44,6 @@ class ScreenHandler():
 
     def Execute(self, reqCode:str, data:str):
         try:
-            if data == "SINGLE":
-                width, height, byte_data = self.TakeScreenshotAsBytes()
-                res = (str(width) + " " + str(height) + " ").encode("utf-8") + byte_data
-                return HandlerState.SUCCEEDED, res
-            else:
-                return HandlerState.INVALID, None
-        except Exception as e:
-            traceback.print_exc()
-            return HandlerState.FAILED, None
-
-    def TakeScreenshotAsBytes(self):
-        image = ImageGrab.grab()
-        byte_data = image.tobytes()
-        width, height = image.size
-        if DEBUG:
-            image.save(Path(__file__).parent / ("debug_img" + str(DEBUG_FRAME_COUNT) + ".jpg"), 'JPEG', quality=70)
-            pass
-        image.close()
-        return width, height, byte_data
-
-class ScreenshotHandler():
-    def __init__(self):
-        pass
-
-    def Execute(self, reqCode:str, data:str):
-        try:
             width, height, byte_data = self.TakeScreenshotAsBytes()
             res = (str(width) + " " + str(height) + " ").encode("utf-8") + byte_data
             return HandlerState.SUCCEEDED, res
@@ -77,30 +51,54 @@ class ScreenshotHandler():
             traceback.print_exc()
             return HandlerState.FAILED, None
 
-    def TakeScreenshotAsBytes(self):
-        # hScreenDC = windll.user32.GetDC(None)
-        # hMemoryDC = windll.gdi32.CreateCompatibleDC(hScreenDC)
-        # width = windll.gdi32.GetDeviceCaps(hScreenDC, HORZRES)
-        # height = windll.gdi32.GetDeviceCaps(hScreenDC, VERTRES)
-        # bitmap = windll.gdi32.CreateCompatibleBitmap(hScreenDC, width, height)
-        # oldBmp = windll.gdi32.SelectObject(hMemoryDC, bitmap)
-        # windll.gdi32.BitBlt(bitmap, 0,0, width, height, hScreenDC, 0,0, SRCCOPY or CAPTUREBLT)
-        # bi = BITMAPINFOHEADER()
-        # bi.biSize = ctypes.sizeof(BITMAPINFOHEADER);
-        # bi.biWidth = width;
-        # bi.biHeight = height;
-        # bi.biPlanes = 1;
-        # bi.biBitCount = 32;
-        # bi.biCompression = ctypes.BI_RGB;
-        # bi.biSizeImage = 0;
-        # bi.biXPelsPerMeter = 0;
-        # bi.biYPelsPerMeter = 0;
-        # bi.biClrUsed = 0;
-        # bi.biClrImportant = 0;
-        pass
+    def TakeScreenshotAsBytes(self, w=None, h=None):
+        image = ImageGrab.grab()
+        if image.mode != "RGBA":
+            image = image.convert("RGBA")
+        if w != None and h != None:
+            image = image.resize((w, h), Image.ANTIALIAS)
+        byte_data = image.tobytes("raw", "RGBA")
+        width, height = image.size
+        image.close()
+        return width, height, byte_data
+
+# class ScreenshotHandler():
+#     def __init__(self):
+#         pass
+
+#     def Execute(self, reqCode:str, data:str):
+#         try:
+#             width, height, byte_data = self.TakeScreenshotAsBytes()
+#             res = (str(width) + " " + str(height) + " ").encode("utf-8") + byte_data
+#             return HandlerState.SUCCEEDED, res
+#         except Exception as e:
+#             traceback.print_exc()
+#             return HandlerState.FAILED, None
+
+#     def TakeScreenshotAsBytes(self):
+#         # hScreenDC = windll.user32.GetDC(None)
+#         # hMemoryDC = windll.gdi32.CreateCompatibleDC(hScreenDC)
+#         # width = windll.gdi32.GetDeviceCaps(hScreenDC, HORZRES)
+#         # height = windll.gdi32.GetDeviceCaps(hScreenDC, VERTRES)
+#         # bitmap = windll.gdi32.CreateCompatibleBitmap(hScreenDC, width, height)
+#         # oldBmp = windll.gdi32.SelectObject(hMemoryDC, bitmap)
+#         # windll.gdi32.BitBlt(bitmap, 0,0, width, height, hScreenDC, 0,0, SRCCOPY or CAPTUREBLT)
+#         # bi = BITMAPINFOHEADER()
+#         # bi.biSize = ctypes.sizeof(BITMAPINFOHEADER);
+#         # bi.biWidth = width;
+#         # bi.biHeight = height;
+#         # bi.biPlanes = 1;
+#         # bi.biBitCount = 32;
+#         # bi.biCompression = ctypes.BI_RGB;
+#         # bi.biSizeImage = 0;
+#         # bi.biXPelsPerMeter = 0;
+#         # bi.biYPelsPerMeter = 0;
+#         # bi.biClrUsed = 0;
+#         # bi.biClrImportant = 0;
+#         pass
 
 
 if __name__ == "__main__":
     DEBUG = True
-    a = ScreenshotHandler()
+    a = ScreenHandler()
     m, n = a.Execute("", "")

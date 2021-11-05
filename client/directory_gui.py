@@ -12,10 +12,14 @@ import json
 from request_gui import Request
 import client
 
-
 class DirectoryUI(Request):
     def __init__(self, client):
         super().__init__(client, 'DIRECTORY')
+        self.listIndex = []
+        self.request_cut = "CUT"
+        self.request_copy = "COPY"
+        self.cut_index = []
+        self.copy_index = []
 
     def setupUI(self):
         self.setWindowTitle(QCoreApplication.translate("MainWindow", "Directory"))
@@ -67,7 +71,7 @@ class DirectoryUI(Request):
         itemlist = json.loads(rawdata)
         for item in itemlist:
             self.model.insertRow(0)
-            node = QStandardItem(item) 
+            node = QStandardItem(item)
             self.model.setItem(0, node)
 
         self.proxyModel = QSortFilterProxyModel(recursiveFilteringEnabled = True)
@@ -83,25 +87,53 @@ class DirectoryUI(Request):
         self.treeView.clicked.connect(self.onTreeViewClicked)
 
     def addItemToModel(self, index):
-        folderName = index.data()
-        state, rawdata = self.client.MakeRequest("VIEW " + "\"" + folderName.upper() + "\"")
+        filePath = self.findFilePath(index)
+        state, rawdata = self.client.MakeRequest("VIEW " + filePath)
         if state != ClientState.SUCCEEDED:
             QMessageBox.about(self, "", "Không thể tải dữ liệu")
             return
 
-        itemlist = json.loads(rawdata)
+        nameList = json.loads(rawdata)
         root = self.model.itemFromIndex(index)
-        print(root)
-        for item in itemlist:
+        print("root:", root.row(),root.column())
+        if root.parent():
+            print("root_parent:", root.parent().row(),root.parent().column())
+        for item in nameList:
             node = QStandardItem(item)
             root.appendRow(node)
-            print(node.row(), node.column())
+            root.setChild(node.row(), node)
+            print("node:", node.column(), node.row())
+            print("parent_node:", node.parent().column(), node.parent().row())
+
+    def findFilePath(self, index):
+        tmp_index = index
+        filePath = "\""
+        folderList = []
+        while tmp_index.row() != -1 and tmp_index.column() != -1:
+            print("index truyen vao:", index.row(),index.column())
+            print("tmp_index:", tmp_index.row(),tmp_index.column())
+            folderList.append(tmp_index.data())
+            print("folderList:", folderList)
+            tmp_index = tmp_index.parent()
+        while folderList:
+            cur = folderList.pop()
+            filePath = filePath + cur
+            if folderList:
+                filePath = filePath + "\\"
+            print("filePath:", filePath)
+        filePath = filePath + "\""
+        print("filePath:", filePath)
+        return filePath
 
     def onTreeViewClicked(self, index):
-        print(index.row(), index.column())
+        print("index: ", index.row(), index.column())
         source_index = self.proxyModel.mapToSource(index)
-        print(source_index.row(), source_index.column())
-        self.addItemToModel(source_index)
+        print("source index:", source_index.row(), source_index.column())
+        print("source_parent_index:", source_index.parent().row(), source_index.parent().column())
+        if source_index not in self.listIndex:
+            self.listIndex.append(source_index)
+            self.addItemToModel(source_index)
+        return source_index
 
     def onFind(self):
         self.proxyModel.setFilterWildcard("*{}*".format(self.txtFind.text()))
@@ -117,36 +149,66 @@ class DirectoryUI(Request):
             menu.addAction("Rename")
             menu.addAction("Delete")
             action = menu.exec_(self.treeView.mapToGlobal(point))
-            request = ""
+            tmp_index = self.treeView.indexAt(point)
+            index = self.proxyModel.mapToSource(tmp_index)
             if action:
                 if action.text() == "Copy":
-                    request = "COPY"
-                    self.addRequest(request)
+                    self.request_copy = self.request_copy + " " + self.findFilePath(index)
+                    self.copy_index.append(index)
+                    print("self.request_copy:", self.request_copy)
                     pass
                 if action.text() == "Cut":
-                    request = "CUT"
+                    self.request_cut = self.request_cut + " " + self.findFilePath(index)
+                    self.cut_index.append(index)
+                    print("self.request_cut:", self.request_cut)
                     pass
                 if action.text() == "Patse":
-                    self.RequestCopy_Cut(request)
-                    pass
+                    print("self.request_copy", self.request_copy)
+                    print("self.request_cut:", self.request_cut)
+
+                    self.RequestCopy_Cut(self.request_copy, index)
+                    self.RequestCopy_Cut(self.request_cut, index)
+                    self.request_cut = "CUT"
+                    self.request_copy = "COPY"
+
+                    root = self.model.itemFromIndex(index)
+                    while self.copy_index:
+                        ix = QStandardItem(self.copy_index.pop())
+                        it = ix.data()
+                        newitem = QStandardItem(it)
+                        root.appendRow(newitem)
+                        root.setChild(newitem.row(), newitem)
+                    while self.cut_index:
+                        ix = QStandardItem(self.cut_index.pop())
+                        it = ix.data()
+                        newitem = QStandardItem(it)
+                        root.appendRow(newitem)
+                        root.setChild(newitem.row(), newitem)
+                        self.model.removeRow(ix.row(), ix.parent())
+
                 if action.text() == "Rename":
-                    request = "RENAME"
-                    self.RequestRename()
-                    pass
+                    filePath = self.findFilePath(index)
+                    print("filePath:", filePath)
+                    self.treeView.edit(index)
+                    newName = index.data()
+                    newName = "\"" + newName + "\""
+                    self.RequestRename(filePath, newName)
+
                 if action.text() == "Delete":
-                    self.RequestDelete()
-                    pass
+                    filepath = self.findFilePath(index)
+                    self.model.removeRow(index.row(), index.parent())
+                    print("filepath:", filepath)
+                    self.RequestDelete(filepath)
 
-    def addRequest(self, request):
-        index = self.treeView.selectedIndexes()[0]
-        item = self.model.itemData(index)
-        return request
-        pass
+    def RequestCopy_Cut(self, request:str, index:QModelIndex):
+        if len(request) > 4:
+            endPath = self.findFilePath(index)
+            request = request + " " + endPath
+            print("request:", request)
 
-    def RequestCopy_Cut(self, request):
-        state, _ = self.client.MakeRequest("COPY " + request)
-        if state != client.ClientState.SUCCEEDED:
-            QMessageBox.about(self, "", "Error")
+            state, _ = self.client.MakeRequest(request)
+            if state != client.ClientState.SUCCEEDED:
+                QMessageBox.about(self, "", "Error")
 
     def RequestDelete(self, path):
         state, _ = self.client.MakeRequest("DELETE " + path)

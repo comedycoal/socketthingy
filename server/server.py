@@ -11,6 +11,7 @@ from handler_state import HandlerState
 from directory_handler import DirectoryHandler
 from screen_handler import ScreenHandler
 from info_handler import InfoHandler
+from livestream_handler import LivestreamHandler
 from shutdown_handler import ShutdownHandler
 from process_handler import ProcessHandler
 from application_handler import ApplicationHandler
@@ -33,7 +34,6 @@ class ServerProgram:
     LIVE_STREAM_DISABLED = 3
 
     def __init__(self):
-        self.serverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.currHandler = None
 
         # Only accepts one client
@@ -42,8 +42,10 @@ class ServerProgram:
         self.connected = False
 
     def __del__(self):
-        self.serverSocket.close()
-        self.clientSocket.close()
+        if self.serverSocket != None:
+            self.serverSocket.close()
+        if self.clientSocket != None:
+            self.clientSocket.close()
 
     def OpenServer(self, host=HOST, port=PORT, backlog=BACKLOG):
         '''Open the server at (host, port) for backlog ammount of unaccepted connections
@@ -52,6 +54,8 @@ class ServerProgram:
             port (int): port
             backlog (int): backlog number
         '''
+        self.serverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.currHandler = None
         self.serverSocket.bind((host, port))
         self.serverSocket.listen(backlog)
         self.clientSocket, self.address = self.serverSocket.accept()
@@ -78,45 +82,14 @@ class ServerProgram:
             req = self.ReceiveMessage()
             if not req:
                 print("No messages sent")
+                time.sleep(0.5)
+                self.CloseServer()
                 break
             state = self.HandleRequest(req)
-            if state == ServerProgram.LIVE_STREAM_ENABLED:
-                TARGET_FPS = 24
-                TIME_FRAME = 1 / TARGET_FPS
-                stopEvent = threading.Event()
-                stopEvent.clear()
 
-                def listen(sp: ServerProgram, stop: threading.Event):
-                    while True:
-                        req = sp.ReceiveMessage()
-                        if req == "SCREENSHOT STOP":
-                            stop.set()
-                            sp.SendMessage("SUCCEEDED")
-                            return
-                        else:
-                            sp.SendMessage("FAILED")
-
-                # start a thread
-                thread = threading.Thread(target=listen, args=(self, stopEvent))
-                thread.start()
-
-                frame = 0
-                elapsed = 0
-                while not stopEvent.is_set():
-                    start = timeit.default_timer()
-                    state = self.HandleRequest("SCREENSHOT SINGLE")
-                    targetTime = frame * TIME_FRAME
-                    frame += 1
-                    end = timeit.default_timer()
-                    elapsed += (end - start)
-
-                    waitTime = targetTime - elapsed if targetTime >= elapsed else 0.0
-                    time.sleep(waitTime)
-
-                thread.join()
-
-            elif state == ServerProgram.QUIT_PROGRAM:
-                time.sleep(1)
+            if state == ServerProgram.QUIT_PROGRAM:
+                time.sleep(0.5)
+                self.CloseServer()
                 break
 
     def ReceiveMessage(self):
@@ -189,6 +162,8 @@ class ServerProgram:
 
         state = HandlerState.INVALID
         extraInfo = None
+
+        print(request, data)
         # FINISH request exits the current handler
         # EXIT request finishes the program
         if request == "FINISH":
@@ -210,31 +185,25 @@ class ServerProgram:
             elif request == "SCREENSHOT":
                 self.currHandler = ScreenHandler()
                 immediate = True
-                if data == "LIVE":
-                    return ServerProgram.LIVE_STREAM_ENABLED
-                elif data == "STOP":
-                    return ServerProgram.LIVE_STREAM_DISABLED
             elif request == "INFO":
                 self.currHandler = InfoHandler()
                 immediate = True
             # The rest needs additional requests and looping
             else:
                 immediate = False
+                state = HandlerState.SUCCEEDED
                 if request == "PROCESS":
                     self.currHandler = ProcessHandler()
-                    state = HandlerState.SUCCEEDED
                 elif request == "APPLICATION":
                     self.currHandler = ApplicationHandler()
-                    state = HandlerState.SUCCEEDED
                 elif request == "KEYLOG":
                     self.currHandler = InputHandler(KEYLOG_FILE_PATH)
-                    state = HandlerState.SUCCEEDED
                 elif request == "REGISTRY":
                     self.currHandler = RegistryHandler()
-                    state = HandlerState.SUCCEEDED
                 elif request == "DIRECTORY":
                     self.currHandler = DirectoryHandler()
-                    state = HandlerState.SUCCEEDED
+                elif request == "LIVESTREAM":
+                    self.currHandler = LivestreamHandler(self, self.serverSocket, ScreenHandler())
 
         # Else let current handler handle request
         else:
@@ -245,10 +214,10 @@ class ServerProgram:
             self.currHandler = None
             immediate = False
 
-        a = 0
-        if extraInfo:
-            a = len(extraInfo)
-        print(request, data, a)
+        print(state, len(extraInfo) if extraInfo != None else '')
+
+        if request == "SHUTDOWN" and state == HandlerState.SUCCEEDED:
+            return ServerProgram.QUIT_PROGRAM
 
         if state == HandlerState.SUCCEEDED:
             self.SendMessage("SUCCEEDED", extraInfo)

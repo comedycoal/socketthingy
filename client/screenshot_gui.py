@@ -7,42 +7,46 @@ from PySide2.QtCore import *
 from PySide2 import QtGui, QtWidgets
 from PySide2.QtGui import *
 from PySide2.QtWidgets import *
-from PIL import Image
+from PIL import Image, ImageQt
 
 from client import ClientState
-from Request_gui import Request
+from request_gui import Request
 
 class ScreenShotUI(Request):
     def __init__(self, client):
         super().__init__(client, 'SCREENSHOT')
         self.image = None
+        self.image_bytes = None
         pass
 
     def setupUI(self):
         self.setWindowTitle(QCoreApplication.translate("MainWindow", "ScreenShot"))
-        self.resize(500,500)
+        self.setFixedSize(1304, 750)
 
         self.screen_capture_button = QPushButton(clicked = lambda:self.onCapScreen())
         font = QtGui.QFont()
         font.setFamily("Helvetica")
         font.setPointSize(12)
+        font.setWeight(60)
         self.screen_capture_button.setFont(font)
         self.screen_capture_button.setStyleSheet("background-color: rgb(224, 237, 255)")
         self.screen_capture_button.setObjectName("screen_capture_button")
         self.screen_capture_button.setText(QCoreApplication.translate("MainWindow", "Capture Screen"))
 
-        self.save_button = QPushButton(clicked = lambda: self.onStopLivestream())
+        self.save_button = QPushButton(clicked = lambda: self.onSavePicture())
         font = QtGui.QFont()
         font.setFamily("Helvetica")
         font.setPointSize(12)
+        font.setWeight(60)
         self.save_button.setFont(font)
         self.save_button.setStyleSheet("background-color: rgb(224, 237, 255)")
         self.save_button.setObjectName("save_button")
         self.save_button.setText(QCoreApplication.translate("MainWindow", "Save"))
 
         self.imageView = QLabel()
-        self.imageView.setStyleSheet("background-color: rgb(224, 237, 255)")
+        self.imageView.resize(1280, 720)
         self.imageView.setObjectName("imageView")
+        self.onCapScreen()
 
         button_layout = QHBoxLayout()
         button_layout.addSpacing(100)
@@ -65,17 +69,19 @@ class ScreenShotUI(Request):
         w = int(split[0].decode("utf-8"))
         h = int(split[1].decode("utf-8"))
         pixels = split[2]
-        image = Image.frombytes("RGB", (w, h), pixels)
-        return image
+        image = Image.frombytes("RGBA", (w, h), data= pixels)
+        imageQt = ImageQt.ImageQt(image)
+        imageQtScaled = imageQt.scaled(QSize(1280,720), Qt.KeepAspectRatio)
+        return imageQtScaled
 
     def onCapScreen(self):
         if self.image:
-            self.image.close()
             self.image = None
 
         state = ClientState.SUCCEEDED
         rawdata = None
-        state, rawdata = self.MakeBaseRequest()
+        state, rawdata = self.client.MakeRequest('SCREENSHOT')
+        self.image_bytes = rawdata
         if state == ClientState.NOCONNECTION:
             QMessageBox.about(self, "", "Chưa kết nối đến server")
             return False
@@ -84,15 +90,15 @@ class ScreenShotUI(Request):
             return False
 
         try:
-            self.image = self.BytesToImage(rawdata)
-            self.imageView.setPixmap(QPixmap(self.image))
+            img = self.BytesToImage(rawdata)
+            self.image = QPixmap.fromImage(img)
+            self.imageView.setPixmap(self.image)
             return True
         except Exception as e:
-            QMessageBox.about(self, "", e)
+            QMessageBox.about(self, "", str(e))
             return False
-        pass
 
-    def SavePicture(self):
+    def onSavePicture(self):
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
         imagename, _ = QFileDialog.getSaveFileName(
@@ -100,7 +106,7 @@ class ScreenShotUI(Request):
         )
         if imagename:
             with open(imagename, "wb") as f:
-                f.write(self.image)
+                f.write(self.image_bytes)
         pass
 
     def ShowWindow(self):

@@ -19,7 +19,7 @@ class ServerUI(QtWidgets.QWidget):
     def closeEvent(self, event: QtGui.QCloseEvent) -> None:
         close = QtWidgets.QMessageBox.question(self,
                                      "Thoát",
-                                     ("Server vẫn đang mở. " if self.serverProgram.started else "") + "Bạn chắc chắn muốn thoát?",
+                                     ("Server vẫn đang mở. " if self.serverProgram.connected else "") + "Bạn chắc chắn muốn thoát?",
                                       QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
         if close == QtWidgets.QMessageBox.Yes:
             event.accept()
@@ -89,7 +89,7 @@ class ServerUI(QtWidgets.QWidget):
         self.setWindowTitle(_translate("MainWindow", "Server"))
         self.WELCOME_label.setText(_translate("MainWindow", "SERVER"))
         self.open_close_sv_button.setText(_translate("MainWindow", "Mở Server"))
-        self.port_box.setText(_translate("MainWindow", "Nhập port"))
+        self.port_box.setText(_translate("MainWindow", "6666"))
 
         portLayout = QtWidgets.QHBoxLayout() 
         portLayout.addWidget(self.port_box)

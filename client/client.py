@@ -2,6 +2,7 @@
 import socket
 from tkinter.constants import E, TRUE
 from enum import Enum
+import traceback
 
 HEADER = 64
 FORMAT = "utf-8"
@@ -42,7 +43,7 @@ class ClientProgram:
         try:
             assert self.connected, "No connection is made"
         except AssertionError as e:
-            print(e)
+            traceback.print_exc()
             return
         a = 0
         while True:
@@ -70,11 +71,13 @@ class ClientProgram:
             if not self.sock:
                 self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.sock.connect((host, port))
+            self.host = host
+            self.port = port
             self.requestID = 0
             self.connected = True
             return True
         except Exception as e:
-            print(e)
+            traceback.print_exc()
             return False
 
     def Disconnect(self):
@@ -83,7 +86,11 @@ class ClientProgram:
         '''
         if not self.sock:
             return
+
+        self.MakeRequest("EXIT")
         self.sock.close()
+        self.host = None
+        self.port = None
         self.connected = False
         self.sock = None
         
@@ -101,7 +108,7 @@ class ClientProgram:
         try:
             assert self.connected, "No connection established"
         except Exception as e:
-            print(e)
+            traceback.print_exc()
             return ClientState.NOCONNECTION, None
 
         # Send message
@@ -116,16 +123,16 @@ class ClientProgram:
             reply = self.ReceiveMessage()
             assert reply, "No reply received"
         except Exception as e:
-            print(e)
+            traceback.print_exc()
             return ClientState.BADCONNECTION, None
 
        # Process reply from server 
         try:
             stateStr, rawdata = self.ProcessReply(reply)
-            print(stateStr, rawdata)
+            print(stateStr, len(rawdata) if rawdata != None else '-')
             return ClientProgram.States[stateStr], rawdata if rawdata else None
         except Exception as e:
-            print(e)
+            traceback.print_exc()
             return ClientState.BADMESSAGE, None
             
     def SendMessage(self, string, binaryData=None):
@@ -156,7 +163,7 @@ class ClientProgram:
 
             return True
         except Exception as e:
-            print(e)
+            traceback.print_exc()
         return False
 
     def ReceiveMessage(self):
@@ -180,7 +187,7 @@ class ClientProgram:
                 message = b''.join(chunks)
                 return message
         except Exception as e:
-            print(e)
+            traceback.print_exc()
         
         return None
 

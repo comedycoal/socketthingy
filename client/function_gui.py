@@ -2,12 +2,13 @@ from os import close
 from posixpath import expanduser
 import sys
 from PySide2 import QtCore, QtGui, QtWidgets
-from PySide2.QtWidgets import QMessageBox, QVBoxLayout
+from PySide2.QtWidgets import QGridLayout, QHBoxLayout, QMessageBox, QVBoxLayout
 
 from client import ClientState
 from client import ClientProgram
 
 from screenshot_gui import ScreenShotUI
+from streaming_gui import LivestreamUI
 from directory_gui import DirectoryUI
 from input_gui import InputUI
 from process_gui import ProcessUI, ApplicationUI
@@ -18,6 +19,7 @@ class FunctionUI(QtWidgets.QWidget):
         self.clientProgram = clientProgram
         self.keystroke = InputUI(self.clientProgram)
         self.screenshot = ScreenShotUI(self.clientProgram)
+        self.livestream = LivestreamUI(self.clientProgram)
         self.directory = DirectoryUI(self.clientProgram)
         self.process = ProcessUI(self.clientProgram)
         self.application = ApplicationUI(self.clientProgram)
@@ -56,8 +58,7 @@ class FunctionUI(QtWidgets.QWidget):
     def setupUI(self):
         _translate = QtCore.QCoreApplication.translate
         self.setWindowTitle(_translate("MainWindow", "Function"))
-        # self.resize(400,400)
-        self.setFixedSize(300,300)
+        self.setFixedSize(300,210)
 
         self.function_label = QtWidgets.QLabel()
         font = QtGui.QFont()
@@ -78,7 +79,7 @@ class FunctionUI(QtWidgets.QWidget):
         self.process_button.setFont(font)
         self.process_button.setStyleSheet("background-color: rgb(224, 237, 255)")
         self.process_button.setObjectName("process_button")
-        self.process_button.setText(_translate("MainWindow", "Process Running"))
+        self.process_button.setText(_translate("MainWindow", "Process"))
 
         self.application_button = QtWidgets.QPushButton(clicked = lambda:self.application.OnStartGUI())
         font = QtGui.QFont()
@@ -87,7 +88,7 @@ class FunctionUI(QtWidgets.QWidget):
         self.application_button.setFont(font)
         self.application_button.setStyleSheet("background-color: rgb(224, 237, 255)")
         self.application_button.setObjectName("application_button")
-        self.application_button.setText(_translate("MainWindow", "App Running"))
+        self.application_button.setText(_translate("MainWindow", "Application"))
 
         self.shutdown_button = QtWidgets.QPushButton(clicked = lambda:self.onShutdown())
         font = QtGui.QFont()
@@ -116,7 +117,7 @@ class FunctionUI(QtWidgets.QWidget):
         self.screenshot_button.setObjectName("screenshot_button")
         self.screenshot_button.setText(_translate("MainWindow", "Screenshot"))
 
-        self.streaming_button = QtWidgets.QPushButton(clicked = lambda:self.screenshot.OnStartGUI())
+        self.streaming_button = QtWidgets.QPushButton(clicked = lambda:self.livestream.OnStartGUI())
         font = QtGui.QFont()
         font.setFamily("Helvetica")
         font.setPointSize(12)
@@ -153,6 +154,7 @@ class FunctionUI(QtWidgets.QWidget):
         self.test_button.setStyleSheet("background-color: rgb(224, 237, 255)")
         self.test_button.setObjectName("test_button")
         self.test_button.setText(_translate("MainWindow", "test"))
+        self.test_button.hide()
 
         self.info_button = QtWidgets.QPushButton(clicked = lambda: self.onShowMACAdress())
         font = QtGui.QFont()
@@ -165,20 +167,52 @@ class FunctionUI(QtWidgets.QWidget):
 
         QtCore.QMetaObject.connectSlotsByName(self)
 
-        layout = QVBoxLayout()
-        layout.addWidget(self.function_label)
-        layout.addWidget(self.keystroke_button)
-        layout.addWidget(self.screenshot_button)
-        layout.addWidget(self.streaming_button)
-        layout.addWidget(self.shutdown_button)
-        layout.addWidget(self.logout_button)
-        layout.addWidget(self.directory_button)
-        layout.addWidget(self.process_button)
-        layout.addWidget(self.application_button)
-        layout.addWidget(self.info_button)
-        layout.addWidget(self.test_button)
 
-        self.setLayout(layout)
+        layout1 = QVBoxLayout()
+        layout1.addWidget(self.screenshot_button)
+        layout1.addSpacing(5)
+        layout1.addWidget(self.streaming_button)
+        layout1.addSpacing(5)
+
+        layout2 = QVBoxLayout()
+        layout2.addWidget(self.keystroke_button)
+        layout2.addSpacing(5)
+        layout2.addWidget(self.directory_button)
+        layout2.addSpacing(5)
+
+        layout3 = QVBoxLayout()
+        layout3.addWidget(self.process_button)
+        layout3.addSpacing(5)
+        layout3.addWidget(self.application_button)
+
+        layout4t = QGridLayout()
+        layout4t.setHorizontalSpacing(5)
+        layout4t.addWidget(self.logout_button, 0, 0)
+        layout4t.addWidget(self.shutdown_button, 0, 1)
+
+        layout4 = QVBoxLayout()
+        layout4.addWidget(self.info_button)
+        layout4.addSpacing(5)
+        layout4.addItem(layout4t)
+
+        buttonLayout = QGridLayout()
+        buttonLayout.setHorizontalSpacing(15)
+        buttonLayout.setVerticalSpacing(10)
+        buttonLayout.addItem(layout1, 0, 0)
+        buttonLayout.addItem(layout2, 0, 1)
+        buttonLayout.addItem(layout3, 1, 0)
+        buttonLayout.addItem(layout4, 1, 1)
+
+        tmp = QtWidgets.QWidget(self)
+        tmp.setStyleSheet("background-color: rgb(124, 237, 150)")
+
+        mainLayout = QVBoxLayout(tmp)
+        mainLayout.addWidget(self.function_label)
+        mainLayout.addItem(buttonLayout)
+
+
+
+        self.setLayout(mainLayout)
 
 if __name__ == '__main__':
     from os import environ
