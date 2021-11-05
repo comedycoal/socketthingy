@@ -24,7 +24,7 @@ class ClientGUI():
         if state == True:
             showinfo(title = '', message = 'Kết nối đến server thành công')
         else:
-            showinfo(title = '', message = 'Lỗi kết nối đến server')
+            showinfo(title = '', message = 'Thao tác thất bại')
 
     def Disconnect(self):
         self.clientProgram.Disconnect()
@@ -35,7 +35,7 @@ class ClientGUI():
             showinfo(title = '', message = 'Thực hiện thành công')
             self.Disconnect()
         else:
-            showinfo(title = '', message = 'Lỗi kết nối đến server')
+            showinfo(title = '', message = 'Thao tác thất bại')
 
     def OnExitButton(self):
         state, _ = self.clientProgram.MakeRequest("EXIT")
@@ -44,7 +44,7 @@ class ClientGUI():
             showinfo(title = '', message = 'Thực hiện thành công')
             pass
         else:
-            showinfo(title = '', message = 'Lỗi kết nối đến server')
+            showinfo(title = '', message = 'Thao tác thất bại')
             pass
         #self.ClientWindow.destroy()
 

@@ -3,3 +3,4 @@
 */temp/
 server/test_dir/*
 *.tmp
+*.reg

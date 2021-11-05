@@ -6,7 +6,7 @@ import ctypes
 import traceback
 from pathlib import Path
 
-TEMP_PATH = os.path.join(Path(__file__).parent.absolute(),"temp\\tempreg.reg")
+TEMP_PATH = os.path.join(Path(__file__).parent.absolute(),"tempreg.reg")
 
 def StringToBytes(string):
     return bytes([int(i) for i in string])
@@ -18,7 +18,16 @@ class RegistryHandler:
         "QWORD": winreg.REG_QWORD,
         "STRING": winreg.REG_SZ,
         "MULTISTRING": winreg.REG_MULTI_SZ,
-        "EXPANDABLESTRING": winreg.REG_EXPAND_SZ,
+        "EXPANDABLESTRING": winreg.REG_EXPAND_SZ
+    }
+
+    RevertedTypes = {
+        winreg.REG_BINARY: "BINARY",
+        winreg.REG_DWORD: "DWORD",
+        winreg.REG_QWORD: "QWORD",
+        winreg.REG_SZ: "STRING",
+        winreg.REG_MULTI_SZ: "MULTISTRING",
+        winreg.REG_EXPAND_SZ: "EXPANDABLESTRING"
     }
 
     def __init__(self):
@@ -42,7 +51,8 @@ class RegistryHandler:
             elif reqCode == "GETVALUE":
                 a = data.split(' ', 1)
                 assert len(a) == 2
-                extraData = self.GetValue(a[0], a[1])
+                value, t = self.GetValue(a[0], a[1])
+                extraData = str(value) + " " + t
 
             elif reqCode == "SETVALUE":
                 print(data)
@@ -78,14 +88,13 @@ class RegistryHandler:
             return HandlerState.FAILED, None
 
     def UseRegFile(self, filepath):
-        ctypes.windll.shell32.ShellExecuteA
         subprocess.Popen(f"regedit /s \"{filepath}\"")
 
     def GetValue(self, keyPath, valueName):
         key = self.GetKeyHandle(keyPath, winreg.KEY_QUERY_VALUE)
         info = winreg.QueryValueEx(key, valueName)
         winreg.CloseKey(key)
-        return info[0]
+        return info[0], RegistryHandler.RevertedTypes.get(info[1], "OTHER")
 
     def SetValue(self, keyPath, valueName, typeValue, value):
         key = self.GetKeyHandle(keyPath, winreg.KEY_SET_VALUE)

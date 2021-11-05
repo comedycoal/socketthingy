@@ -38,7 +38,7 @@ class ClientUI(QtWidgets.QWidget):
             self.hide()
 
         else:
-            QMessageBox.about(self, "", "Lỗi kết nối đến server")
+            QMessageBox.about(self, "", "Thao tác thất bại")
 
     def Disconnect(self):
         self.clientProgram.Disconnect()

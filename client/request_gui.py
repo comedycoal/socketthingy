@@ -26,7 +26,7 @@ class Request(QtWidgets.QWidget):
             QtWidgets.QMessageBox.about(self, "", "Chưa kết nối đến server")
             return False
         elif state != ClientState.SUCCEEDED:
-            QtWidgets.QMessageBox.about(self, "", "Lỗi kết nối đến server")
+            QtWidgets.QMessageBox.about(self, "", "Thao tác thất bại")
             return False
 
         self.parentWindow.hide()

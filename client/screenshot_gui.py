@@ -85,7 +85,7 @@ class ScreenShotUI(Request):
             QMessageBox.about(self, "", "Chưa kết nối đến server")
             return False
         elif state != ClientState.SUCCEEDED:
-            QMessageBox.about(self, "", "Lỗi kết nối đến server")
+            QMessageBox.about(self, "", "Thao tác thất bại")
             return False
 
         try:

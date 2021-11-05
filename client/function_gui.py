@@ -12,6 +12,7 @@ from streaming_gui import LivestreamUI
 from directory_gui import DirectoryUI
 from input_gui import InputUI
 from process_gui import ProcessUI, ApplicationUI
+from registry_gui import RegistryUI
 
 class RequestButtonPack:
     def __init__(self, parent, identifierStr: str, button: QPushButton):
@@ -35,6 +36,8 @@ class RequestButtonPack:
             self.requestUI = ScreenShotUI(self.parent, self.parent.clientProgram)
         elif self.identifier == "LIVESTREAM":
             self.requestUI = LivestreamUI(self.parent, self.parent.clientProgram)
+        elif self.identifier == "REGISTRY":
+            self.requestUI = RegistryUI(self.parent, self.parent.clientProgram)
 
         self.button.clicked.disconnect()
         self.button.clicked.connect(self.requestUI.OnStartGUI)
@@ -62,14 +65,14 @@ class FunctionUI(QtWidgets.QWidget):
             QMessageBox.about(self, "", "Sau 3s máy tính sẽ tắt")
             self.clientProgram.Disconnect()
         else:
-            QMessageBox.about(self, "", "Lỗi kết nối đến server")
+            QMessageBox.about(self, "", "Thao tác thất bại")
 
     def onLogOut(self):
         state, _ = self.clientProgram.MakeRequest("SHUTDOWN L")
         if state == ClientState.SUCCEEDED:
             QMessageBox.about(self, "", "Sau 3s máy tính sẽ logout")
         else:
-            QMessageBox.about(self, "", "Lỗi kết nối đến server")
+            QMessageBox.about(self, "", "Thao tác thất bại")
 
     def onShowMACAdress(self):
         state, rawdata = self.clientProgram.MakeRequest("INFO MACADDRESS")
@@ -77,7 +80,7 @@ class FunctionUI(QtWidgets.QWidget):
         if state == ClientState.SUCCEEDED:
             QMessageBox.about(self, "", "MAC Address: " + macAdd)
         else:
-            QMessageBox.about(self, "", "Lỗi kết nối đến server")
+            QMessageBox.about(self, "", "Thao tác thất bại")
 
     def MakeButton(self, font, style, name, text):
         button = QtWidgets.QPushButton()
@@ -101,6 +104,8 @@ class FunctionUI(QtWidgets.QWidget):
             pack = self.screenshot_pack
         elif identifier == "LIVESTREAM":
             pack = self.streaming_pack
+        elif identifier == "REGISTRY":
+            pack = self.registry_pack
 
         pack.Refresh()
 
@@ -156,6 +161,11 @@ class FunctionUI(QtWidgets.QWidget):
             "DIRECTORY",
             self.MakeButton(font, style, "directory_button", _translate("MainWindow", "Directory")))
 
+        self.registry_pack = RequestButtonPack(
+            self,
+            "REGISTRY",
+            self.MakeButton(font, style, "directory_button", _translate("MainWindow", "Registry")))
+
         self.shutdown_button = self.MakeButton(font, style, "shutdown_button", _translate("MainWindow", "Shutdown"))
         self.logout_button = self.MakeButton(font, style, "logout_button", _translate("MainWindow", "Logout"))
         self.info_button = self.MakeButton(font, style, "info_button", _translate("MainWindow", "MAC Address"))
@@ -182,6 +192,8 @@ class FunctionUI(QtWidgets.QWidget):
         layout3.addWidget(self.process_pack.button)
         layout3.addSpacing(5)
         layout3.addWidget(self.application_pack.button)
+        layout3.addSpacing(5)
+        layout3.addWidget(self.registry_pack.button)
 
         layout4t = QGridLayout()
         layout4t.setHorizontalSpacing(5)

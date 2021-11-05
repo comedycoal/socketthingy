@@ -214,7 +214,7 @@ class ServerProgram:
             self.currHandler = None
             immediate = False
 
-        print(state, len(extraInfo) if extraInfo != None else '')
+        print(state, extraInfo if extraInfo != None and len(extraInfo) < 256 else '')
 
         if request == "SHUTDOWN" and state == HandlerState.SUCCEEDED:
             return ServerProgram.QUIT_PROGRAM

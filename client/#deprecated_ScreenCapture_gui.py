@@ -79,7 +79,7 @@ class Screenshot(Request):
             showinfo(title = '', message = 'Chưa kết nối đến server')
             return False
         elif state != ClientState.SUCCEEDED:
-            showinfo(title = '', message = 'Lỗi kết nối đến server')
+            showinfo(title = '', message = 'Thao tác thất bại')
             return False
 
         try:
