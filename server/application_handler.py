@@ -1,18 +1,6 @@
 import ctypes, ctypes.wintypes
-import traceback
 
-from handler_state import HandlerState
 from process_handler import ProcessHandler
-
-
-pids = set()
-def WindowEnumCallback(hwindow, param):
-    length = GetWindowLength(hwindow)
-    if length > 0 and not IsIconic(hwindow):
-        processID = ctypes.c_ulong()
-        a = GetWindowThreadProcessId(hwindow, ctypes.byref(processID))
-        pids.add(processID.value)
-    return True
 
 kernel32 = ctypes.WinDLL("Kernel32.dll")
 psapi = ctypes.WinDLL('Psapi.dll')
@@ -30,9 +18,17 @@ GetWindowThreadProcessId.restype = ctypes.wintypes.DWORD
 IsIconic = user32.IsIconic
 IsIconic.restype = ctypes.wintypes.BOOL
 
+pids = set()
+def WindowEnumCallback(hwindow, param):
+    length = GetWindowLength(hwindow)
+    if length > 0 and not IsIconic(hwindow):
+        processID = ctypes.c_ulong()
+        a = GetWindowThreadProcessId(hwindow, ctypes.byref(processID))
+        pids.add(processID.value)
+    return True
+
 WNDENUMPROC = ctypes.CFUNCTYPE(ctypes.wintypes.BOOL, ctypes.wintypes.HWND, ctypes.wintypes.LPARAM)
 FUNC = WNDENUMPROC(WindowEnumCallback)
-
 
 class ApplicationHandler(ProcessHandler):
     def __int__(self):

@@ -1,13 +1,10 @@
 import socket
 import os
 import time
-import timeit
-import threading
 import traceback
 from pathlib import Path
 
 from handler_state import HandlerState
-
 from directory_handler import DirectoryHandler
 from screen_handler import ScreenHandler
 from info_handler import InfoHandler
@@ -30,8 +27,6 @@ KEYLOG_FILE_PATH = os.path.join(Path(__file__).parent.absolute(),"logged_key.txt
 class ServerProgram:
     QUIT_PROGRAM = 0
     CONTINUE_PROGRAM = 1
-    LIVE_STREAM_ENABLED = 2
-    LIVE_STREAM_DISABLED = 3
 
     def __init__(self):
         self.currHandler = None
@@ -117,7 +112,7 @@ class ServerProgram:
 
         return None
 
-    def SendMessage(self, string, binaryData=None):
+    def SendMessage(self, string, byteData=None):
         '''
         Send a message to client
         Parameters:
@@ -129,8 +124,8 @@ class ServerProgram:
         '''
         try:
             req = string.encode(FORMAT)
-            if binaryData:
-                req += b' ' + binaryData
+            if byteData:
+                req += b' ' + byteData
 
             length = len(req)
             header = str(length).encode(FORMAT)

@@ -1,8 +1,8 @@
 from handler_state import HandlerState
-from pathlib import Path, WindowsPath, PosixPath
+from pathlib import Path
+
 import os
 import string
-import socket
 import shutil
 import json
 import traceback
@@ -52,13 +52,13 @@ class DirectoryHandler():
         return paths[0] if not keep_list and len(paths) == 1 else paths
 
 
-    def Copy(self, src, dest: Path):
-        src = self.Validate(src)
+    def Copy(self, src_list, dest: Path):
+        src_list = self.Validate(src_list)
         dest = self.Validate(dest, keep_list=False)
-        assert src != None, "Invalid path(s) are presented in pathSrc"
+        assert src_list != None, "Invalid path(s) are presented in pathSrc"
         assert dest != None, "Invalid path(s) are presented in pathDest"
 
-        for path in src:
+        for path in src_list:
             i = 1
             ides = dest / path.name
             while ides.exists():
@@ -69,12 +69,12 @@ class DirectoryHandler():
             else:
                 shutil.copy2(path, ides)
 
-    def Cut(self, src, dest: Path):
-        src = self.Validate(src)
+    def Cut(self, src_list, dest: Path):
+        src_list = self.Validate(src_list)
         dest = self.Validate(dest, keep_list=False)
-        assert src != None, "Invalid path(s) are presented in pathSrc"
+        assert src_list != None, "Invalid path(s) are presented in pathSrc"
         assert dest != None, "Invalid path(s) are presented in pathDest"
-        for path in src:
+        for path in src_list:
             i = 1
             ides = dest / path.name
             while ides.exists():
@@ -83,14 +83,14 @@ class DirectoryHandler():
             
             os.rename(path, ides)
 
-    def Delete(self, src):
+    def Delete(self, src_list):
         '''
         Please use with caution.
         '''
-        src = self.Validate(src)
-        assert src != None, "Invalid path(s) are presented in pathSrc"
+        src_list = self.Validate(src_list)
+        assert src_list != None, "Invalid path(s) are presented in pathSrc"
 
-        for path in src:
+        for path in src_list:
             if (path.is_dir()):
                 shutil.rmtree(path, True)
             else:

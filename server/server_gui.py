@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from PySide2 import QtCore, QtGui, QtWidgets
 import server
 import sys
@@ -32,21 +30,9 @@ class ServerUI(QtWidgets.QWidget):
         port = int(self.port_box.text())
         self.serverProgram.OpenServer(host=HOST, port=port, backlog=BACKLOG)
         self.serverProgram.Run()
-        # QtWidgets.QMessageBox.about(self, "", "Mở server thành công")
-
-        # _translate = QtCore.QCoreApplication.translate
-        # self.open_close_sv_button.clicked.disconnect()
-        # self.open_close_sv_button.clicked.connect(lambda:self.closeServer())
-        # self.open_close_sv_button.setText(_translate("MainWindow", "Đóng Server"))
 
     def closeServer(self):
         self.serverProgram.CloseServer()
-        # QtWidgets.QMessageBox.about(self, "", "Đóng server thành công")
-
-        # _translate = QtCore.QCoreApplication.translate
-        # self.open_close_sv_button.clicked.disconnect()
-        # self.open_close_sv_button.clicked.connect(lambda:self.openServer())
-        # self.open_close_sv_button.setText(_translate("MainWindow", "Mở Server"))
 
     def setupUI(self):
         self.setObjectName("MainWindow")

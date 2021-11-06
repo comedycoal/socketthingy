@@ -1,8 +1,9 @@
+from handler_state import HandlerState
+
 import psutil
 import json
 import subprocess
 import traceback
-from handler_state import HandlerState
 
 class ProcessHandler(): 
     def __init__(self):
@@ -39,8 +40,8 @@ class ProcessHandler():
                 list_processes.append(pr.as_dict(['pid', 'name', 'num_threads']))
         return list_processes
 
-    def KillProcess(self, id):
-        to_kill = psutil.Process(id)
+    def KillProcess(self, pid):
+        to_kill = psutil.Process(pid)
         to_kill.kill()
 
     def StartProcess(self, name):

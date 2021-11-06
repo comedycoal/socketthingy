@@ -127,6 +127,7 @@ class ProcessUI(RequestUI):
         self.treeView.setColumnWidth(1, 100)
         self.treeView.setAlternatingRowColors(True)
         self.treeView.setSortingEnabled(True)
+        self.treeView.sortByColumn(0, Qt.AscendingOrder)
         self.treeView.setContextMenuPolicy(Qt.CustomContextMenu)
         self.treeView.customContextMenuRequested.connect(self.showContextMenu)
 

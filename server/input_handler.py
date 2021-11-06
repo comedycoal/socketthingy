@@ -1,10 +1,10 @@
 import ctypes
-from ctypes import windll, byref, c_int, c_void_p, POINTER, CFUNCTYPE
+from ctypes import windll, c_int, POINTER, CFUNCTYPE
 from ctypes import wintypes
+
 import threading
 import time
 import traceback
-from pathlib import Path
 
 from handler_state import HandlerState
 from vkcode import VK_CODE, VK_SHIFT, VK_CAPS_LOCK, NormalChar
@@ -128,10 +128,6 @@ def StartThread(function):
 
     return handle, threadID
 
-def TimedCall(callback, seconds):
-    time.sleep(seconds)
-    callback()
-
 class InputHandler:
     def __init__(self, filepath):
         global globalFile
@@ -167,7 +163,7 @@ class InputHandler:
                 return HandlerState.INVALID, None
 
             return HandlerState.SUCCEEDED, extraData.encode("utf-8")
-            pass
+            
         except Exception as e:
             traceback.print_exc()
             return HandlerState.FAILED, None
@@ -212,7 +208,7 @@ class InputHandler:
 
         self.locked = False
 
-    def __del(self):
+    def __del__(self):
         self.Unhook()
         if self.locked:
             self.Unlock()

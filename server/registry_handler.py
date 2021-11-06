@@ -1,10 +1,10 @@
 from handler_state import HandlerState
+
+from pathlib import Path
 import winreg
 import subprocess
 import os
-import ctypes
 import traceback
-from pathlib import Path
 
 TEMP_PATH = os.path.join(Path(__file__).parent.absolute(),"tempreg.reg")
 

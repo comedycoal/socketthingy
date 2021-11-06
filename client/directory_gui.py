@@ -6,7 +6,7 @@ from PySide2.QtWidgets import *
 from client import ClientState
 from request_gui import RequestUI
 import json
-
+import re
 
 class MySortFilterProxyModel(QSortFilterProxyModel):
     def lessThan(self, source_left, source_right):
@@ -216,6 +216,7 @@ class DirectoryUI(RequestUI):
         self.treeView.setModel(self.proxyModel)
         self.treeView.setAlternatingRowColors(True)
         self.treeView.setSortingEnabled(True)
+        self.treeView.sortByColumn(0, Qt.AscendingOrder)
         self.treeView.setContextMenuPolicy(Qt.CustomContextMenu)
         self.treeView.customContextMenuRequested.connect(self.showContextMenu)
         self.treeView.clicked.connect(self.onTreeViewClicked)

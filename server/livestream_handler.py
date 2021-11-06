@@ -1,7 +1,6 @@
 from handler_state import HandlerState
 from screen_handler import ScreenHandler
 
-from pathlib import Path
 import socket
 import time
 import threading

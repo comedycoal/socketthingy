@@ -1,6 +1,6 @@
 import os
-import traceback
 import time
+import traceback
 from handler_state import HandlerState
 
 class ShutdownHandler:
@@ -18,7 +18,9 @@ class ShutdownHandler:
                 return HandlerState.SUCCEEDED, None
             else:
                 return HandlerState.INVALID, None
-        except:
+
+        except Exception as e:
+            traceback.print_exc()
             return HandlerState.FAILED, None
 
 if __name__ == '__main__':
