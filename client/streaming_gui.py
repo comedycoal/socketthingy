@@ -54,7 +54,7 @@ class LivestreamUI(RequestUI):
 
     def setupUI(self):
         self.setWindowTitle(QCoreApplication.translate("MainWindow", "ScreenShot"))
-        self.setFixedSize(984,580)
+        self.setFixedSize(1000,600)
         
         self.streaming_button = QPushButton(clicked = lambda:self.onLivestream())
         font = QtGui.QFont()
@@ -75,7 +75,6 @@ class LivestreamUI(RequestUI):
         self.stop_button.setText(QCoreApplication.translate("MainWindow", "Dừng"))
 
         self.imageView = QLabel()
-        self.imageView.setStyleSheet("background-color: rgb(224, 237, 255)")
         self.imageView.setObjectName("imageView")
 
         button_layout = QHBoxLayout()
@@ -165,13 +164,11 @@ class LivestreamUI(RequestUI):
             QMessageBox.about(self, "", "Thao tác không thành công")
             return False
 
-        if self.stopStreamEvent:
-            self.stopStreamEvent.set()
+        self.stopStreamEvent.set()
         if self.renderThread:
             self.renderThread.join()
         if self.captureThread:
             self.captureThread.join()
-
         self.imageQueue = None
         self.renderThread = None
         self.captureThread = None

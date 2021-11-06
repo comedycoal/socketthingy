@@ -1,5 +1,5 @@
+from PySide2 import QtGui
 from PySide2.QtCore import *
-from PySide2 import QtGui, QtWidgets
 from PySide2.QtGui import *
 from PySide2.QtWidgets import *
 
@@ -15,10 +15,11 @@ class DirectoryUI(RequestUI):
         self.request_copy = "COPY"
         self.cut_index = []
         self.copy_index = []
+        self.cur_index = None
 
     def setupUI(self):
         self.setWindowTitle(QCoreApplication.translate("MainWindow", "Directory"))
-        # self.resize(600,600)
+        self.resize(800,600)
 
         # self.find_label = QLabel()
         # font = QtGui.QFont()
@@ -53,32 +54,41 @@ class DirectoryUI(RequestUI):
         self.client_request_label.setObjectName("client_request_label")
         self.client_request_label.setText(QCoreApplication.translate("MainWindow","Client Request:"))
 
-        self.copy_button = QPushButton()
+        self.transfer_button = QPushButton(clicked = self.onTransfer)
         font = QtGui.QFont()
         font.setFamily("Helvetica")
         font.setPointSize(12)
-        self.copy_button.setFont(font)
-        self.copy_button.setStyleSheet("background-color: rgb(224, 237, 255)")
-        self.copy_button.setObjectName("copy_button")
-        self.copy_button.setText(QCoreApplication.translate("MainWindow", "Copy"))
+        self.transfer_button.setFont(font)
+        self.transfer_button.setStyleSheet("background-color: rgb(224, 237, 255)")
+        self.transfer_button.setObjectName("transfer_button")
+        self.transfer_button.setText(QCoreApplication.translate("MainWindow", "Chuyển file"))
 
-        self.cut_button = QPushButton()
-        font = QtGui.QFont()
-        font.setFamily("Helvetica")
-        font.setPointSize(12)
-        self.cut_button.setFont(font)
-        self.cut_button.setStyleSheet("background-color: rgb(224, 237, 255)")
-        self.cut_button.setObjectName("cut_button")
-        self.cut_button.setText(QCoreApplication.translate("MainWindow", "Cut"))
+        # self.copy_button = QPushButton(clicked = lambda: self.onCopy())
+        # font = QtGui.QFont()
+        # font.setFamily("Helvetica")
+        # font.setPointSize(12)
+        # self.copy_button.setFont(font)
+        # self.copy_button.setStyleSheet("background-color: rgb(224, 237, 255)")
+        # self.copy_button.setObjectName("copy_button")
+        # self.copy_button.setText(QCoreApplication.translate("MainWindow", "Copy"))
 
-        self.paste_button = QPushButton()
-        font = QtGui.QFont()
-        font.setFamily("Helvetica")
-        font.setPointSize(12)
-        self.paste_button.setFont(font)
-        self.paste_button.setStyleSheet("background-color: rgb(224, 237, 255)")
-        self.paste_button.setObjectName("paste_button")
-        self.paste_button.setText(QCoreApplication.translate("MainWindow", "Paste"))
+        # self.cut_button = QPushButton(clicked = lambda: self.onCut())
+        # font = QtGui.QFont()
+        # font.setFamily("Helvetica")
+        # font.setPointSize(12)
+        # self.cut_button.setFont(font)
+        # self.cut_button.setStyleSheet("background-color: rgb(224, 237, 255)")
+        # self.cut_button.setObjectName("cut_button")
+        # self.cut_button.setText(QCoreApplication.translate("MainWindow", "Cut"))
+
+        # self.paste_button = QPushButton()
+        # font = QtGui.QFont()
+        # font.setFamily("Helvetica")
+        # font.setPointSize(12)
+        # self.paste_button.setFont(font)
+        # self.paste_button.setStyleSheet("background-color: rgb(224, 237, 255)")
+        # self.paste_button.setObjectName("paste_button")
+        # self.paste_button.setText(QCoreApplication.translate("MainWindow", "Paste"))
 
         # findLayout = QHBoxLayout()
         # findLayout.addWidget(self.find_label)
@@ -86,17 +96,36 @@ class DirectoryUI(RequestUI):
         # findLayout.addWidget(self.txtFind)
 
         mainLayout = QGridLayout()
-        mainLayout.setHorizontalSpacing(10)
+        mainLayout.setHorizontalSpacing(15)
         mainLayout.setVerticalSpacing(10)
         # mainLayout.addItem(findLayout)
         # mainLayout.addWidget(self.thumbnail)
-        mainLayout.addWidget(self.treeView, 0, 1, 5, 2)
-        mainLayout.addWidget(self.leftTree, 0, 0)
-        mainLayout.addWidget(self.client_request_label, 1, 0)
-        mainLayout.addWidget(self.copy_button, 2, 0)
-        mainLayout.addWidget(self.cut_button, 3, 0)
-        mainLayout.addWidget(self.paste_button, 4, 0)
+        mainLayout.addWidget(self.leftTree, 0, 0, Qt.AlignLeft| Qt.AlignTop)
+        mainLayout.addWidget(self.transfer_button, 1, 0, Qt.AlignCenter | Qt.AlignTop)
+        mainLayout.addWidget(QLabel(), 2, 0)
+        mainLayout.addWidget(QLabel(), 3, 0)
+        mainLayout.addWidget(self.treeView, 0, 1, 4, 3)
 
+        # mainLayout = QVBoxLayout()
+
+        # splitterHLeft = QSplitter(Qt.Vertical)
+        # splitterHLeft.addWidget(self.leftTree)
+
+        # buttonLayoutFrame = QFrame()
+        # buttonLayoutFrame.setFrameShape(QFrame.StyledPanel)
+        # buttonLayout = QVBoxLayout()
+        # buttonLayout.addWidget(self.transfer_button)
+        # buttonLayoutFrame.setLayout(buttonLayout)
+        # splitterHLeft.addWidget(buttonLayoutFrame)
+
+        # splitterVMid = QSplitter(Qt.Horizontal)
+        # splitterVMid.addWidget(splitterHLeft)
+        # splitterVMid.addWidget(self.treeView)
+
+        # # mainLayout.addItem(findLayout)
+        # # mainLayout.addWidget(self.thumbnail)
+        # mainLayout.addWidget(self.client_request_label)
+        # mainLayout.addWidget(splitterVMid)
 
         self.setLayout(mainLayout)
 
@@ -108,7 +137,7 @@ class DirectoryUI(RequestUI):
             self.leftmodel.insertRow(0)
             self.leftmodel.setItem(0, QStandardItem(listDir.pop()))
         self.leftTree.setModel(self.leftmodel)
-        self.leftTree.setColumnWidth(0,50)
+        self.leftTree.setMinimumWidth(70)
         self.leftTree.clicked.connect(self.onleftTreeClick)
 
     def onleftTreeClick(self, index):
@@ -126,6 +155,7 @@ class DirectoryUI(RequestUI):
         self.model.setHeaderData(0,Qt.Horizontal, path)
         # self.thumbnail.setText("Dir:    D:")
 
+        self.listIndex.clear()
         itemlist = json.loads(rawdata)
         for item, ftype in itemlist:
             self.model.insertRow(0)
@@ -195,6 +225,7 @@ class DirectoryUI(RequestUI):
     def onTreeViewClicked(self, index):
         # print("index: ", index.row(), index.column())
         source_index = self.proxyModel.mapToSource(index)
+        self.cur_index = source_index
         # print("source index:", source_index.row(), source_index.column())
         # print("source_parent_index:", source_index.parent().row(), source_index.parent().column())
         self.treeView.expand(index)
@@ -291,6 +322,54 @@ class DirectoryUI(RequestUI):
         if state != ClientState.SUCCEEDED:
             QMessageBox.about(self, "", "Error")
 
+    def onTransfer(self):
+        options = QFileDialog.Options()
+        options |= QFileDialog.DontUseNativeDialog
+        filename, _ = QFileDialog.getOpenFileName(
+            self, "Choose file", r"C:", "All files(*)", options=options
+        )
+        bytes_data = None
+        if filename:
+            with open(filename, "rb") as f:
+                f.seek(0,2)
+                l = f.tell()
+                f.seek(0,0)
+                bytes_data = f.read(l)
+            f.close()
+        fileName = filename.split('/').pop()
+
+        index = self.cur_index
+        tmp_index = index
+        filePath = "\""
+        folderList = []
+        while tmp_index.row() != -1 and tmp_index.column() != -1:
+            print(folderList)
+            folderList.append(tmp_index.data())
+            tmp_index = tmp_index.parent()
+
+        while len(folderList) > 1:
+            cur = folderList.pop()
+            filePath = filePath + cur
+            print(folderList)
+            filePath = filePath + "\\"
+            print(filePath)
+        filePath = filePath + fileName + "\""
+        print(filePath)
+
+        self.RequestTransfer(filePath, bytes_data)
+
+        index = index.parent()
+        root = self.model.itemFromIndex(index)
+        root.appendRow(QStandardItem(fileName))
+
+        pass
+
+    def RequestTransfer(self, path, bytes_data):
+        state, _ = self.client.MakeRequest("TRANSFER " + path + " " + bytes_data.decode("utf-8"))
+        if state != client.ClientState.SUCCEEDED:
+            QMessageBox.about(self, "", "Error")
+        pass
+
     def ShowWindow(self):
         self.setupUI()
         self.show()
@@ -309,7 +388,7 @@ if __name__ == '__main__':
 
     suppress_qt_warnings()
 
-    app = QtWidgets.QApplication(sys.argv)
+    app = QApplication(sys.argv)
     demo = DirectoryUI(None, client.ClientProgram())
-    demo.ShowWindow()
+    demo.ShowWindow() 
     sys.exit(app.exec_())

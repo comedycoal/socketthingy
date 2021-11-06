@@ -31,6 +31,8 @@ class DirectoryHandler():
         return ["%s:\\" % d for d in string.ascii_uppercase if os.path.exists('%s:' % d)]
 
     def View(self, path: Path):
+        print(path)
+        print(os.path.isabs(path))
         if not os.path.isabs(path):
             path = self.root / path
         else:
@@ -160,12 +162,12 @@ class DirectoryHandler():
 if __name__ == "__main__":
     a = DirectoryHandler()
     b = None
-    with open("README.docx", "rb") as f:
-        f.seek(0,2)
-        l = f.tell()
-        f.seek(0,0)
-        b = f.read(l)
-    b = b'"README2.docx" ' + b
+    # with open("README.docx", "rb") as f:
+    #     f.seek(0,2)
+    #     l = f.tell()
+    #     f.seek(0,0)
+    #     b = f.read(l)
+    # b = b'"README2.docx" ' + b
     s, d = a.Execute("INIT", None)
     print(s)
     print(d.decode('utf-8'))

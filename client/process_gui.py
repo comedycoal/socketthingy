@@ -175,14 +175,14 @@ class ProcessUI(RequestUI):
 
     def RequestKill(self, id_to_kill):
         state, _ = self.client.MakeRequest("KILL " + id_to_kill)
-        if state == client.ClientState.SUCCEEDED:
+        if state == ClientState.SUCCEEDED:
             QMessageBox.about(self, "", "Đã diệt process")
         else:
             QMessageBox.about(self, "", "Không tìm thấy process")
 
     def RequestStart(self, name_to_start):
             state, _ = self.client.MakeRequest('START ' + name_to_start)
-            if state == client.ClientState.SUCCEEDED:
+            if state == ClientState.SUCCEEDED:
                 QMessageBox.about(self, "", "Process đã được bật")
             else:
                 QMessageBox.about(self, "", "Không tìm thấy process")
