@@ -42,7 +42,7 @@ class ScreenHandler():
     def __init__(self):
         pass
 
-    def Execute(self, reqCode:str, data:str):
+    def Execute(self, reqCode, data):
         try:
             width, height, byte_data = self.TakeScreenshotAsBytes()
             res = (str(width) + " " + str(height) + " ").encode("utf-8") + byte_data
@@ -66,7 +66,7 @@ class ScreenHandler():
 #     def __init__(self):
 #         pass
 
-#     def Execute(self, reqCode:str, data:str):
+#     def Execute(self, reqCode, data):
 #         try:
 #             width, height, byte_data = self.TakeScreenshotAsBytes()
 #             res = (str(width) + " " + str(height) + " ").encode("utf-8") + byte_data

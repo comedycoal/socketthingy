@@ -20,6 +20,7 @@ class DirectoryUI(RequestUI):
         self.request_copy = "COPY"
         self.cut_index = []
         self.copy_index = []
+        self.cur_index = None
 
     def setupUI(self):
         self.setWindowTitle(QCoreApplication.translate("MainWindow", "Directory"))
@@ -229,6 +230,7 @@ class DirectoryUI(RequestUI):
     def onTreeViewClicked(self, index):
         # print("index: ", index.row(), index.column())
         source_index = self.proxyModel.mapToSource(index)
+        self.cur_index = source_index
         # print("source index:", source_index.row(), source_index.column())
         # print("source_parent_index:", source_index.parent().row(), source_index.parent().column())
         self.treeView.expand(index)
@@ -325,7 +327,7 @@ class DirectoryUI(RequestUI):
         if state != client.ClientState.SUCCEEDED:
             QMessageBox.about(self, "", "Error")
 
-    def onTransfer(self, point):
+    def onTransfer(self):
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
         filename, _ = QFileDialog.getOpenFileName(
@@ -339,32 +341,36 @@ class DirectoryUI(RequestUI):
                 f.seek(0,0)
                 bytes_data = f.read(l)
             f.close()
-        fileName = filename.split('\\').pop()
+        fileName = filename.split('/').pop()
 
-        index = self.treeView.indexAt(point)
+        index = self.cur_index
         tmp_index = index
         filePath = "\""
         folderList = []
         while tmp_index.row() != -1 and tmp_index.column() != -1:
+            print(folderList)
             folderList.append(tmp_index.data())
             tmp_index = tmp_index.parent()
 
         while len(folderList) > 1:
             cur = folderList.pop()
             filePath = filePath + cur
+            print(folderList)
             filePath = filePath + "\\"
+            print(filePath)
         filePath = filePath + fileName + "\""
+        print(filePath)
 
         self.RequestTransfer(filePath, bytes_data)
 
         index = index.parent()
         root = self.model.itemFromIndex(index)
-        root.appendRow(fileName)
+        root.appendRow(QStandardItem(fileName))
 
         pass
 
     def RequestTransfer(self, path, bytes_data):
-        state, _ = self.client.MakeRequest("TRANSFER " + path + " " + bytes_data)
+        state, _ = self.client.MakeRequest("TRANSFER " + path + " " + bytes_data.decode("utf-8"))
         if state != client.ClientState.SUCCEEDED:
             QMessageBox.about(self, "", "Error")
         pass

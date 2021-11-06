@@ -65,6 +65,7 @@ class ScreenShotUI(RequestUI):
         h = int(split[1].decode("utf-8"))
         pixels = split[2]
         image = Image.frombytes("RGBA", (w, h), pixels)
+        self.image_bytes = pixels
 
         return image
 
@@ -75,7 +76,6 @@ class ScreenShotUI(RequestUI):
         state = ClientState.SUCCEEDED
         rawdata = None
         state, rawdata = self.client.MakeRequest('SCREENSHOT')
-        self.image_bytes = rawdata
         if state == ClientState.NOCONNECTION:
             QMessageBox.about(self, "", "Chưa kết nối đến server")
             return False

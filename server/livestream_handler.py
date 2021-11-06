@@ -60,8 +60,10 @@ class LivestreamHandler():
                 self.livestreamThread.start()
                 return HandlerState.SUCCEEDED, None
             elif reqCode == "STOP":
-                self.livestreamEvent.set()
-                self.livestreamThread.join()
+                if self.livestreamEvent:
+                    self.livestreamEvent.set()
+                if self.livestreamThread:
+                    self.livestreamThread.join()
                 self.livestreamThread = None
                 self.livestreamEvent = None
                 return HandlerState.SUCCEEDED, None
@@ -75,7 +77,7 @@ class LivestreamHandler():
         # accept the coming connection from client
         liveSocket, address = hostSocket.accept()
 
-        TARGET_FPS = 60
+        TARGET_FPS = 30
         TIME_FRAME = 1 / TARGET_FPS
 
         frame = 0

@@ -54,7 +54,7 @@ class LivestreamUI(RequestUI):
 
     def setupUI(self):
         self.setWindowTitle(QCoreApplication.translate("MainWindow", "ScreenShot"))
-        self.setFixedSize(984,580)
+        self.setFixedSize(1000,600)
         
         self.streaming_button = QPushButton(clicked = lambda:self.onLivestream())
         font = QtGui.QFont()
@@ -165,8 +165,10 @@ class LivestreamUI(RequestUI):
             return False
 
         self.stopStreamEvent.set()
-        self.renderThread.join()
-        self.captureThread.join()
+        if self.renderThread:
+            self.renderThread.join()
+        if self.captureThread:
+            self.captureThread.join()
         self.imageQueue = None
         
         self.renderThread = None

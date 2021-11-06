@@ -51,7 +51,6 @@ class ServerUI(QtWidgets.QWidget):
     def setupUI(self):
         self.setObjectName("MainWindow")
         self.setFixedSize(250, 100)
-        self.setStyleSheet("background-color:rgb(255, 255, 220)")
 
         self.WELCOME_label = QtWidgets.QLabel()
         self.WELCOME_label.setGeometry(QtCore.QRect(0, 20, 200, 30))
@@ -96,7 +95,11 @@ class ServerUI(QtWidgets.QWidget):
         portLayout.addSpacing(10)
         portLayout.addWidget(self.open_close_sv_button)
 
-        mainLayout = QtWidgets.QVBoxLayout()
+        tmp = QtWidgets.QWidget(self)
+        tmp.setFixedSize(300, 210)
+        tmp.setStyleSheet("background-color: rgb(30, 30, 90)")
+
+        mainLayout = QtWidgets.QVBoxLayout(tmp)
         mainLayout.addWidget(self.WELCOME_label)
         mainLayout.addItem(portLayout)
 
