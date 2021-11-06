@@ -7,6 +7,40 @@ from client import ClientState
 from request_gui import RequestUI
 import json
 
+
+class MySortFilterProxyModel(QSortFilterProxyModel):
+    def lessThan(self, source_left, source_right):
+        if source_left.child(0,0).data() is None:
+            if source_right.child(0,0).data() is not None:
+                return False
+        if source_left.child(0,0).data() is not None:
+            if source_right.child(0,0).data() is None:
+                return True
+        data_left = source_left.data()
+        data_right = source_right.data()
+        print("left data: " ,data_left)
+        print("right data: " ,data_right)
+        if type(data_left) == type(data_right) == str:
+            return self.fname(data_left) < self.fname(data_right)
+        return super(MySortFilterProxyModel, self).lessThan(source_left, source_right)
+
+    # def greaterThan(self, source_left, source_right):
+    #     if source_left.child(0,0).data() is None:
+    #         if source_right.child(0,0).data() is not None:
+    #             return True
+    #     data_left = source_left.data()
+    #     data_right = source_right.data()
+    #     if type(data_left) == type(data_right) == str:
+    #         return self.fname(data_left) > self.fname(data_right)
+    #     return super(MySortFilterProxyModel, self).greaterThan(source_left, source_right)
+
+    @staticmethod
+    def fname(key):
+        parts = re.split(r'(\d*\.\d+|\d+)', key)
+        parts[0] = parts[0].upper()
+        return tuple((e.swapcase() if i % 2 == 0 else float(e))
+                for i, e in enumerate(parts))
+
 class DirectoryUI(RequestUI):
     def __init__(self, parentWindow, client):
         super().__init__(parentWindow, client, 'DIRECTORY')
@@ -132,10 +166,19 @@ class DirectoryUI(RequestUI):
     def createLeftTree(self):
         self.leftmodel = QStandardItemModel(0, 1)
         self.leftmodel.setHeaderData(0,Qt.Horizontal, "Disk:")
-        listDir = ["C:\\", "D:\\"]
-        while listDir:
+        listdisk = []
+        for disk in range(ord('A'), ord('Z') + 1, 1):
+            disk = str(chr(disk))
+            state, rawdata = self.client.MakeRequest("VIEW " + "\"" + disk + ":\\\"")
+            if state == ClientState.SUCCEEDED:
+                listitem = json.loads(rawdata)
+                if listitem:
+                    path = disk + ":\\"
+                    listdisk.append(path)
+
+        while listdisk:
             self.leftmodel.insertRow(0)
-            self.leftmodel.setItem(0, QStandardItem(listDir.pop()))
+            self.leftmodel.setItem(0, QStandardItem(listdisk.pop()))
         self.leftTree.setModel(self.leftmodel)
         self.leftTree.setMinimumWidth(70)
         self.leftTree.clicked.connect(self.onleftTreeClick)
@@ -164,7 +207,7 @@ class DirectoryUI(RequestUI):
                 node.appendRow(QStandardItem(None))
             self.model.setItem(0, node)
 
-        self.proxyModel = QSortFilterProxyModel(recursiveFilteringEnabled = True)
+        self.proxyModel = MySortFilterProxyModel(recursiveFilteringEnabled = True)
         self.proxyModel.invalidateFilter()
         self.proxyModel.setSourceModel(self.model)
         self.createDirectoryTree()
