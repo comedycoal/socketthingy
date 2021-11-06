@@ -4,3 +4,7 @@
 server/test_dir/*
 *.tmp
 *.reg
+build/
+dist/
+env/
+~$README.docx

@@ -163,6 +163,9 @@ class ServerProgram:
         state = HandlerState.INVALID
         extraInfo = None
 
+        if (type(self.currHandler) != DirectoryHandler or request != "TRANSFER") and data:
+            data = data.decode(FORMAT)
+            
         print(request, data if data and len(data) < 512 else (len(data) if data else ''))
         # FINISH request exits the current handler
         # EXIT request finishes the program
@@ -207,8 +210,6 @@ class ServerProgram:
 
         # Else let current handler handle request
         else:
-            if type(self.currHandler) != DirectoryHandler or request != "TRANSFER" and data:
-                data = data.decode(FORMAT)
             state, extraInfo = self.currHandler.Execute(request, data)
 
         if self.currHandler and immediate:
