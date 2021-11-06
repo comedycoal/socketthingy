@@ -111,6 +111,7 @@ class DirectoryHandler():
         dest = parent / dest.name
         with open(dest, "wb") as f:
             f.write(data)
+            print("Write completed at " + str(dest))
 
     def Execute(self, reqCode, data):
         try:

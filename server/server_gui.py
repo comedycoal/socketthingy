@@ -15,16 +15,9 @@ class ServerUI(QtWidgets.QWidget):
         self.serverProgram = server.ServerProgram()
 
     def closeEvent(self, event: QtGui.QCloseEvent) -> None:
-        close = QtWidgets.QMessageBox.question(self,
-                                     "Thoát",
-                                     ("Server vẫn đang mở. " if self.serverProgram.connected else "") + "Bạn chắc chắn muốn thoát?",
-                                      QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
-        if close == QtWidgets.QMessageBox.Yes:
-            event.accept()
-            if self.serverProgram.connected:
-                self.serverProgram.CloseServer()
-        else:
-            event.ignore()
+        event.accept()
+        if self.serverProgram.connected:
+            self.serverProgram.CloseServer()
 
     def openServer(self):
         port = int(self.port_box.text())
@@ -83,7 +76,7 @@ class ServerUI(QtWidgets.QWidget):
 
         tmp = QtWidgets.QWidget(self)
         tmp.setFixedSize(300, 210)
-        tmp.setStyleSheet("background-color: rgb(30, 30, 90)")
+        # tmp.setStyleSheet("background-color: rgb(30, 30, 90)")
 
         mainLayout = QtWidgets.QVBoxLayout(tmp)
         mainLayout.addWidget(self.WELCOME_label)

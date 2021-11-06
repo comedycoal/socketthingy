@@ -94,7 +94,7 @@ class ClientProgram:
         self.connected = False
         self.sock = None
         
-    def MakeRequest(self, request):
+    def MakeRequest(self, request, byteData=None):
         '''
         A wrapper for sending requests and receiving replies for each.
         Sends a message corresponding to 'request', then wait and receive for a reply from server
@@ -113,7 +113,7 @@ class ClientProgram:
 
         # Send message
         self.requestID += 1
-        succeeded = self.SendMessage(request) 
+        succeeded = self.SendMessage(request, byteData) 
         if not succeeded:
             # Connection is faulty, quit
             return ClientState.BADCONNECTION, None

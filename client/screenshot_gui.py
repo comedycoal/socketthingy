@@ -16,7 +16,7 @@ class ScreenShotUI(RequestUI):
 
     def setupUI(self):
         self.setWindowTitle(QCoreApplication.translate("MainWindow", "ScreenShot"))
-        self.setFixedSize(1304, 750)
+        self.setFixedSize(640, 400)
 
         self.screen_capture_button = QPushButton(clicked = lambda:self.onCapScreen())
         font = QtGui.QFont()
@@ -39,7 +39,7 @@ class ScreenShotUI(RequestUI):
         self.save_button.setText(QCoreApplication.translate("MainWindow", "Lưu"))
 
         self.imageView = QLabel()
-        self.imageView.resize(1280, 720)
+        self.imageView.resize(640, 360)
         self.imageView.setObjectName("imageView")
         self.onCapScreen()
 
@@ -85,7 +85,7 @@ class ScreenShotUI(RequestUI):
         try:
             self.image = self.BytesToQImage(rawdata)
             imageQt = ImageQt.ImageQt(self.image)
-            imageQtScaled = imageQt.scaled(QSize(1280,720), Qt.KeepAspectRatio)
+            imageQtScaled = imageQt.scaled(QSize(640,360))
             self.imageView.setPixmap(QPixmap.fromImage(imageQtScaled))
             return True
         except Exception as e:

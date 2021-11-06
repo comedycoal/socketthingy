@@ -1,5 +1,6 @@
 import os
 import time
+import threading
 import traceback
 from handler_state import HandlerState
 
@@ -13,8 +14,11 @@ class ShutdownHandler:
                 os.system("shutdown /s /t 3")
                 return HandlerState.SUCCEEDED, None
             elif (data == "L"):
-                time.sleep(3)
-                os.system("shutdown /l")
+                def LogOutIn3():
+                    time.sleep(3)
+                    os.system("shutdown /l")
+                thread = threading.Thread(target=LogOutIn3)
+                thread.start()
                 return HandlerState.SUCCEEDED, None
             else:
                 return HandlerState.INVALID, None

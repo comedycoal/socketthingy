@@ -215,6 +215,7 @@ class ServerProgram:
         print(state, extraInfo if extraInfo and len(extraInfo) < 512 else (len(extraInfo) if extraInfo else ''))
 
         if request == "SHUTDOWN" and state == HandlerState.SUCCEEDED:
+            self.SendMessage("SUCCEEDED", extraInfo)
             return ServerProgram.QUIT_PROGRAM
 
         if state == HandlerState.SUCCEEDED:

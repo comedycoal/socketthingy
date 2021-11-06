@@ -390,8 +390,8 @@ class DirectoryUI(RequestUI):
         pass
 
     def RequestTransfer(self, path, bytes_data):
-        state, _ = self.client.MakeRequest("TRANSFER " + path + " " + bytes_data.decode("utf-8"))
-        if state != client.ClientState.SUCCEEDED:
+        state, _ = self.client.MakeRequest("TRANSFER " + path + " ", bytes_data)
+        if state != ClientState.SUCCEEDED:
             QMessageBox.about(self, "", "Error")
         pass
 
