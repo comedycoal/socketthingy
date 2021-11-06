@@ -236,7 +236,7 @@ class DirectoryUI(RequestUI):
         return filePath
 
     def onTreeViewClicked(self, index):
-        if self.treeView.isExpanded(index):
+        if self.treeView.isExpanded(index) == True:
             self.treeView.setExpanded(index, False)
         else:
             self.treeView.expand(index)
@@ -290,20 +290,27 @@ class DirectoryUI(RequestUI):
                     self.RequestCopy_Cut(self.request_cut, index)
                     self.request_cut = "CUT"
                     self.request_copy = "COPY"
+                    tmp_index = index
+                    root = self.model.itemFromIndex(tmp_index)
+                    self.listIndex.remove(tmp_index)
+                    while tmp_index.child(0,0).data() is not None:
+                        root.removeRow(0)
+                    root.appendRow(QStandardItem("<Empty>"))
+                    self.addItemToModel(index)
 
-                    root = self.model.itemFromIndex(index)
-                    while self.copy_index:
-                        ix = self.copy_index.pop()
-                        it = ix.data()
-                        newitem = QStandardItem(it)
-                        root.appendRow(newitem)
-                        root.setChild(newitem.row(), newitem)
+                    # root = self.model.itemFromIndex(index)
+                    # while self.copy_index:
+                        # ix = self.copy_index.pop()
+                        # it = ix.data()
+                        # newitem = QStandardItem(it)
+                        # root.appendRow(newitem)
+                        # root.setChild(newitem.row(), newitem)
                     while self.cut_index:
                         ix = self.cut_index.pop()
-                        it = ix.data()
-                        newitem = QStandardItem(it)
-                        root.appendRow(newitem)
-                        root.setChild(newitem.row(), newitem)
+                        # it = ix.data()
+                        # newitem = QStandardItem(it)
+                        # root.appendRow(newitem)
+                        # root.setChild(newitem.row(), newitem)
                         self.model.removeRow(ix.row(), ix.parent())
 
                 if action.text() == "Rename":
@@ -316,9 +323,9 @@ class DirectoryUI(RequestUI):
 
                 if action.text() == "Delete":
                     filepath = self.findFilePath(index)
-                    self.model.removeRow(index.row(), index.parent())
                     # print("filepath:", filepath)
                     self.RequestDelete(filepath)
+                    self.model.removeRow(index.row(), index.parent())
 
     def RequestCopy_Cut(self, request:str, index:QModelIndex):
         if len(request) > 4:
