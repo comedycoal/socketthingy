@@ -26,7 +26,7 @@ class ScreenShotUI(RequestUI):
         self.screen_capture_button.setFont(font)
         self.screen_capture_button.setStyleSheet("background-color: rgb(224, 237, 255)")
         self.screen_capture_button.setObjectName("screen_capture_button")
-        self.screen_capture_button.setText(QCoreApplication.translate("MainWindow", "Capture Screen"))
+        self.screen_capture_button.setText(QCoreApplication.translate("MainWindow", "Chụp lần nữa"))
 
         self.save_button = QPushButton(clicked = lambda: self.onSavePicture())
         font = QtGui.QFont()
@@ -36,7 +36,7 @@ class ScreenShotUI(RequestUI):
         self.save_button.setFont(font)
         self.save_button.setStyleSheet("background-color: rgb(224, 237, 255)")
         self.save_button.setObjectName("save_button")
-        self.save_button.setText(QCoreApplication.translate("MainWindow", "Save"))
+        self.save_button.setText(QCoreApplication.translate("MainWindow", "Lưu"))
 
         self.imageView = QLabel()
         self.imageView.resize(1280, 720)
@@ -65,7 +65,6 @@ class ScreenShotUI(RequestUI):
         h = int(split[1].decode("utf-8"))
         pixels = split[2]
         image = Image.frombytes("RGBA", (w, h), pixels)
-        self.image_bytes = pixels
 
         return image
 
@@ -97,11 +96,10 @@ class ScreenShotUI(RequestUI):
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
         imagename, _ = QFileDialog.getSaveFileName(
-            self, "Save Image", r"C:", "All Files (*)", options=options
+            self, "Save Image", r"C:", "PNG Files (*.png)", options=options
         )
         if imagename:
-            with open(imagename, "wb") as f:
-                f.write(self.image_bytes)
+            self.image.save(imagename)
         pass
 
     def ShowWindow(self):
