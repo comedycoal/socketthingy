@@ -60,8 +60,10 @@ class LivestreamHandler():
                 self.livestreamThread.start()
                 return HandlerState.SUCCEEDED, None
             elif reqCode == "STOP":
-                self.livestreamEvent.set()
-                self.livestreamThread.join()
+                if self.livestreamEvent:
+                    self.livestreamEvent.set()
+                if self.livestreamThread:
+                    self.livestreamThread.join()
                 self.livestreamThread = None
                 self.livestreamEvent = None
                 return HandlerState.SUCCEEDED, None

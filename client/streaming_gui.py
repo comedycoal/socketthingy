@@ -165,11 +165,14 @@ class LivestreamUI(RequestUI):
             QMessageBox.about(self, "", "Thao tác không thành công")
             return False
 
-        self.stopStreamEvent.set()
-        self.renderThread.join()
-        self.captureThread.join()
+        if self.stopStreamEvent:
+            self.stopStreamEvent.set()
+        if self.renderThread:
+            self.renderThread.join()
+        if self.captureThread:
+            self.captureThread.join()
+
         self.imageQueue = None
-        
         self.renderThread = None
         self.captureThread = None
 
