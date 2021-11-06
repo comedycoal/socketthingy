@@ -265,7 +265,7 @@ class DirectoryUI(RequestUI):
             menu = QMenu(self.treeView)
             menu.addAction("Copy")
             menu.addAction("Cut")
-            menu.addAction("Patse")
+            menu.addAction("Paste")
             # menu.addAction("Rename")
             menu.addAction("Delete")
             action = menu.exec_(self.treeView.mapToGlobal(point))
@@ -282,7 +282,7 @@ class DirectoryUI(RequestUI):
                     self.cut_index.append(index)
                     # print("self.request_cut:", self.request_cut)
                     pass
-                if action.text() == "Patse":
+                if action.text() == "Paste":
                     # print("self.request_copy", self.request_copy)
                     # print("self.request_cut:", self.request_cut)
 
