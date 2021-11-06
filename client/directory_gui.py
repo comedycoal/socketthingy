@@ -280,6 +280,8 @@ class DirectoryUI(RequestUI):
                 if action.text() == "Cut":
                     self.request_cut = self.request_cut + " " + self.findFilePath(index)
                     self.cut_index.append(index)
+                    for item in self.cut_index:
+                        print("cut:", item.row(), item.column())
                     # print("self.request_cut:", self.request_cut)
                     pass
                 if action.text() == "Paste":
@@ -292,7 +294,8 @@ class DirectoryUI(RequestUI):
                     self.request_copy = "COPY"
                     tmp_index = index
                     root = self.model.itemFromIndex(tmp_index)
-                    self.listIndex.remove(tmp_index)
+                    if tmp_index in self.listIndex:
+                        self.listIndex.remove(QModelIndex(tmp_index))
                     while tmp_index.child(0,0).data() is not None:
                         root.removeRow(0)
                     root.appendRow(QStandardItem("<Empty>"))
@@ -312,6 +315,8 @@ class DirectoryUI(RequestUI):
                         # root.appendRow(newitem)
                         # root.setChild(newitem.row(), newitem)
                         self.model.removeRow(ix.row(), ix.parent())
+                    for item in self.cut_index:
+                        print("cut:", item.row(), item.column())
 
                 if action.text() == "Rename":
                     filePath = self.findFilePath(index)
