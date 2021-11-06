@@ -7,7 +7,7 @@ class ShutdownHandler:
     def __init__(self):
         pass
 
-    def Execute(self, reqCode:str, data:str):
+    def Execute(self, reqCode, data):
         try:
             if (data == "S"):
                 os.system("shutdown /s /t 3")

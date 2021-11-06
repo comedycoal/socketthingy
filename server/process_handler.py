@@ -9,7 +9,7 @@ class ProcessHandler():
         self.processes = None
         pass
 
-    def Execute(self, reqCode:str, data:str):
+    def Execute(self, reqCode, data):
         try:
             newData = None
             if reqCode == "FETCH":

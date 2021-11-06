@@ -143,7 +143,7 @@ class InputHandler:
         Logger.Init(filepath)
         pass
 
-    def Execute(self, reqCode:str, data:str):
+    def Execute(self, reqCode, data):
         global file
         try:
             extraData = ""

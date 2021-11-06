@@ -215,10 +215,10 @@ class RegistryUI(RequestUI):
     def SetKeyAndValueInformation(self, key=None, valueName=None, valueType=None, valueData=None):
         values = [key, valueName, valueType, valueData]
         affectedBoxes = []
-        affectedBoxes.append(self.keyBox if key else None)
-        affectedBoxes.append(self.valueNameBox if valueName else None)
-        affectedBoxes.append(self.valueTypeBox if valueType else None)
-        affectedBoxes.append(self.valueDataBox if valueData else None)
+        affectedBoxes.append(self.keyBox if key != None else None)
+        affectedBoxes.append(self.valueNameBox if valueName != None else None)
+        affectedBoxes.append(self.valueTypeBox if valueType != None else None)
+        affectedBoxes.append(self.valueDataBox if valueData != None else None)
 
         for i in range(0, len(affectedBoxes)):
             box = affectedBoxes[i]
@@ -262,6 +262,7 @@ class RegistryUI(RequestUI):
         elif state != ClientState.SUCCEEDED:
             QMessageBox.about(self, "", "Thao tác thất bại")
         else:
+            QMessageBox.about(self, "", "Xoá thành công")
             self.SetKeyAndValueInformation(None, None, -1, "")
 
     def onCreateKeyButton(self):
@@ -285,7 +286,7 @@ class RegistryUI(RequestUI):
             QMessageBox.about(self, "", "Thao tác thất bại")
         else:
             QMessageBox.about(self, "", "Xoá Key thành công")
-            self.SetKeyAndValueInformation(keypath, "", -1, "")
+            self.SetKeyAndValueInformation(None, "", -1, "")
 
     def ShowWindow(self):
         self.setupUI()

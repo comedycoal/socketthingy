@@ -36,6 +36,7 @@ DIRECTORY		- INIT
 				- CUT "<path1>" "<path2>"
 				- DELETE "<abs_path>"
 				- RENAME "<abs_path>" "new_name"
+				- TRANSFER "<abs_path>" <BINARY_CONTENT_OF_FILE>
 				- FINISH
 
 EXIT
