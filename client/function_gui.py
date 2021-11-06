@@ -110,7 +110,7 @@ class FunctionUI(QtWidgets.QWidget):
     def setupUI(self):
         _translate = QtCore.QCoreApplication.translate
         self.setWindowTitle(_translate("MainWindow", "Function"))
-        self.setFixedSize(320,210)
+        self.setFixedSize(350,220)
 
         self.function_label = QtWidgets.QLabel()
         font = QtGui.QFont()
@@ -119,7 +119,7 @@ class FunctionUI(QtWidgets.QWidget):
         font.setBold(True)
         font.setWeight(75)
         self.function_label.setFont(font)
-        self.function_label.setStyleSheet("color: rgb(255, 255, 255);")
+        self.function_label.setStyleSheet("color: rgb(255, 24, 128);")
         self.function_label.setAlignment(QtCore.Qt.AlignCenter)
         self.function_label.setObjectName("function_label")
         self.function_label.setText(_translate("MainWindow", "FUNCTION"))
@@ -212,7 +212,7 @@ class FunctionUI(QtWidgets.QWidget):
 
         tmp = QtWidgets.QWidget(self)
         tmp.setFixedSize(320, 210)
-        tmp.setStyleSheet("background-color: rgb(60, 60, 180)")
+        # tmp.setStyleSheet("background-color: rgb(60, 60, 180)")
 
         mainLayout = QVBoxLayout(tmp)
         mainLayout.addWidget(self.function_label)

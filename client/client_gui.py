@@ -47,12 +47,12 @@ class ClientUI(QtWidgets.QWidget):
         _translate = QtCore.QCoreApplication.translate
         self.setWindowTitle(_translate("MainWindow", "Client"))
 
-        self.background_image = QtWidgets.QLabel(self)
-        self.background_image.setGeometry(QtCore.QRect(0, 0, 281, 211))
-        self.background_image.setStyleSheet("background-color: rgb(238, 255, 238);")
-        self.background_image.setText("")
-        self.background_image.setScaledContents(True)
-        self.background_image.setObjectName("background_image")
+        # self.background_image = QtWidgets.QLabel(self)
+        # self.background_image.setGeometry(QtCore.QRect(0, 0, 281, 211))
+        # self.background_image.setStyleSheet("background-color: rgb(238, 255, 238);")
+        # self.background_image.setText("")
+        # self.background_image.setScaledContents(True)
+        # self.background_image.setObjectName("background_image")
 
         self.IP_box = QtWidgets.QLineEdit(self)
         self.IP_box.setGeometry(QtCore.QRect(40, 90, 201, 41))

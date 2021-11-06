@@ -40,8 +40,10 @@ class DirectoryUI(RequestUI):
         self.cur_index = None
 
     def setupUI(self):
+        width = 500
+        height = 400
         self.setWindowTitle(QCoreApplication.translate("MainWindow", "Directory"))
-        self.resize(800,600)
+        self.resize(width,height)
 
         # self.find_label = QLabel()
         # font = QtGui.QFont()
@@ -63,23 +65,13 @@ class DirectoryUI(RequestUI):
         # self.thumbnail.setText("Dir: ")
         # self.find_label.hide()
         # self.txtFind.hide()
-        self.leftTree = QTreeView()
-        self.createLeftTree()
+        self.createBaseDirListBox()
         self.treeView = QTreeView()
-
-        self.client_request_label = QLabel()
-        font = QtGui.QFont()
-        font.setFamily("Helvetica")
-        font.setPointSize(12)
-        self.client_request_label.setFont(font)
-        self.client_request_label.setAlignment(Qt.AlignCenter)
-        self.client_request_label.setObjectName("client_request_label")
-        self.client_request_label.setText(QCoreApplication.translate("MainWindow","Client Request:"))
 
         self.transfer_button = QPushButton(clicked = self.onTransfer)
         font = QtGui.QFont()
         font.setFamily("Helvetica")
-        font.setPointSize(12)
+        font.setPointSize(11)
         self.transfer_button.setFont(font)
         self.transfer_button.setStyleSheet("background-color: rgb(224, 237, 255)")
         self.transfer_button.setObjectName("transfer_button")
@@ -117,64 +109,52 @@ class DirectoryUI(RequestUI):
         # findLayout.addSpacing(10)
         # findLayout.addWidget(self.txtFind)
 
-        mainLayout = QGridLayout()
-        mainLayout.setHorizontalSpacing(15)
-        mainLayout.setVerticalSpacing(10)
+        mainLayout = QVBoxLayout()
+
+        splitterHLeft = QSplitter(Qt.Vertical)
+        splitterHLeft.addWidget(self.baseDirListBox)
+
+        buttonLayoutFrame = QFrame()
+        buttonLayoutFrame.setFrameShape(QFrame.StyledPanel)
+        buttonLayout = QVBoxLayout()
+        buttonLayout.addWidget(self.transfer_button)
+        buttonLayoutFrame.setLayout(buttonLayout)
+        splitterHLeft.addWidget(buttonLayoutFrame)
+
+        splitterVMid = QSplitter(Qt.Horizontal)
+        splitterVMid.addWidget(splitterHLeft)
+        splitterVMid.addWidget(self.treeView)
+        splitterVMid.setSizes([width / 3,width / 3 * 2])
+
         # mainLayout.addItem(findLayout)
         # mainLayout.addWidget(self.thumbnail)
-        mainLayout.addWidget(self.leftTree, 0, 0, Qt.AlignLeft| Qt.AlignTop)
-        mainLayout.addWidget(self.transfer_button, 1, 0, Qt.AlignCenter | Qt.AlignTop)
-        mainLayout.addWidget(QLabel(), 2, 0)
-        mainLayout.addWidget(QLabel(), 3, 0)
-        mainLayout.addWidget(self.treeView, 0, 1, 4, 3)
-
-        # mainLayout = QVBoxLayout()
-
-        # splitterHLeft = QSplitter(Qt.Vertical)
-        # splitterHLeft.addWidget(self.leftTree)
-
-        # buttonLayoutFrame = QFrame()
-        # buttonLayoutFrame.setFrameShape(QFrame.StyledPanel)
-        # buttonLayout = QVBoxLayout()
-        # buttonLayout.addWidget(self.transfer_button)
-        # buttonLayoutFrame.setLayout(buttonLayout)
-        # splitterHLeft.addWidget(buttonLayoutFrame)
-
-        # splitterVMid = QSplitter(Qt.Horizontal)
-        # splitterVMid.addWidget(splitterHLeft)
-        # splitterVMid.addWidget(self.treeView)
-
-        # # mainLayout.addItem(findLayout)
-        # # mainLayout.addWidget(self.thumbnail)
         # mainLayout.addWidget(self.client_request_label)
-        # mainLayout.addWidget(splitterVMid)
+        mainLayout.addWidget(splitterVMid)
 
         self.setLayout(mainLayout)
 
-    def createLeftTree(self):
-        self.leftmodel = QStandardItemModel(0, 1)
-        self.leftmodel.setHeaderData(0,Qt.Horizontal, "Disk:")
-        listdisk = []
-        for disk in range(ord('A'), ord('Z') + 1, 1):
-            disk = str(chr(disk))
-            state, rawdata = self.client.MakeRequest("VIEW " + "\"" + disk + ":\\\"")
-            if state == ClientState.SUCCEEDED:
-                listitem = json.loads(rawdata)
-                if listitem:
-                    path = disk + ":\\"
-                    listdisk.append(path)
+    def createBaseDirListBox(self):
+        state, data = self.client.MakeRequest("INIT")
 
-        while listdisk:
-            self.leftmodel.insertRow(0)
-            self.leftmodel.setItem(0, QStandardItem(listdisk.pop()))
-        self.leftTree.setModel(self.leftmodel)
-        self.leftTree.setMinimumWidth(70)
-        self.leftTree.clicked.connect(self.onleftTreeClick)
+        if state == ClientState.NOCONNECTION:
+            QMessageBox.about(self, "", "Chưa kết nối đến server")
 
-    def onleftTreeClick(self, index):
-        path = index.data()
-        self.createDirectoryModel(path)
-        return index
+        elif state != ClientState.SUCCEEDED:
+            QMessageBox.about(self, "", "Thao tác thất bại")
+
+        baseDirs = []
+        if data:
+            baseDirs = json.loads(data)
+        self.baseDirListBox = QListWidget()
+        for i in range(len(baseDirs)):
+            self.baseDirListBox.insertItem(i, baseDirs[i])
+
+        self.baseDirListBox.itemClicked.connect(self.onBaseDirSelect)
+
+    def onBaseDirSelect(self, item):
+        if item:
+            base_path = item.text()
+            self.createDirectoryModel(base_path)
 
     def createDirectoryModel(self, path):
         state, rawdata = self.client.MakeRequest("VIEW " + "\"" + path + "\"")
@@ -208,6 +188,7 @@ class DirectoryUI(RequestUI):
         self.treeView.setContextMenuPolicy(Qt.CustomContextMenu)
         self.treeView.customContextMenuRequested.connect(self.showContextMenu)
         self.treeView.clicked.connect(self.onTreeViewClicked)
+        self.treeView.expanded.connect(self.onTreeNodeExpanded)
 
     def addItemToModel(self, index):
         filePath = self.findFilePath(index)
@@ -255,15 +236,18 @@ class DirectoryUI(RequestUI):
         return filePath
 
     def onTreeViewClicked(self, index):
+        if self.treeView.isExpanded(index):
+            self.treeView.setExpanded(index, False)
+        else:
+            self.treeView.expand(index)
+
+    def onTreeNodeExpanded(self, index):
         # print("index: ", index.row(), index.column())
         source_index = self.proxyModel.mapToSource(index)
         self.cur_index = source_index
         # print("source index:", source_index.row(), source_index.column())
         # print("source_parent_index:", source_index.parent().row(), source_index.parent().column())
-        if self.treeView.isExpanded(index):
-            self.treeView.setExpanded(index, False)
-        else:
-            self.treeView.expand(index)
+        
         # path = self.findFilePath(source_index)
         # self.thumbnail.setText("Dir:    D:\\" + path.strip("\""))
         if source_index not in self.listIndex:

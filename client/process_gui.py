@@ -198,11 +198,11 @@ class ProcessUI(RequestUI):
             QMessageBox.about(self, "", "Không tìm thấy process")
 
     def RequestStart(self, name_to_start):
-            state, _ = self.client.MakeRequest('START ' + name_to_start)
-            if state == ClientState.SUCCEEDED:
-                QMessageBox.about(self, "", "Process đã được bật")
-            else:
-                QMessageBox.about(self, "", "Không tìm thấy process")
+        state, _ = self.client.MakeRequest('START ' + name_to_start)
+        if state == ClientState.SUCCEEDED:
+            QMessageBox.about(self, "", "Process đã được bật")
+        else:
+            QMessageBox.about(self, "", "Không tìm thấy process")
 
     def ShowWindow(self):
         self.setupUI()
