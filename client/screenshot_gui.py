@@ -1,8 +1,3 @@
-from os import close
-
-from posixpath import expanduser
-import sys
-from tkinter.constants import S
 from PySide2.QtCore import *
 from PySide2 import QtGui, QtWidgets
 from PySide2.QtGui import *
@@ -10,11 +5,11 @@ from PySide2.QtWidgets import *
 from PIL import Image, ImageQt
 
 from client import ClientState
-from request_gui import Request
+from request_gui import RequestUI
 
-class ScreenShotUI(Request):
-    def __init__(self, client):
-        super().__init__(client, 'SCREENSHOT')
+class ScreenShotUI(RequestUI):
+    def __init__(self, parent, client):
+        super().__init__(parent, client, 'SCREENSHOT')
         self.image = None
         self.image_bytes = None
         pass
@@ -64,15 +59,14 @@ class ScreenShotUI(Request):
     def onStartGUI(self):
         self.ShowWindow()
 
-    def BytesToImage(self, rawdata:bytes):
+    def BytesToQImage(self, rawdata:bytes):
         split = rawdata.split(b' ', 2)
         w = int(split[0].decode("utf-8"))
         h = int(split[1].decode("utf-8"))
         pixels = split[2]
-        image = Image.frombytes("RGBA", (w, h), data= pixels)
-        imageQt = ImageQt.ImageQt(image)
-        imageQtScaled = imageQt.scaled(QSize(1280,720), Qt.KeepAspectRatio)
-        return imageQtScaled
+        image = Image.frombytes("RGBA", (w, h), pixels)
+
+        return image
 
     def onCapScreen(self):
         if self.image:
@@ -86,13 +80,14 @@ class ScreenShotUI(Request):
             QMessageBox.about(self, "", "Chưa kết nối đến server")
             return False
         elif state != ClientState.SUCCEEDED:
-            QMessageBox.about(self, "", "Lỗi kết nối đến server")
+            QMessageBox.about(self, "", "Thao tác thất bại")
             return False
 
         try:
-            img = self.BytesToImage(rawdata)
-            self.image = QPixmap.fromImage(img)
-            self.imageView.setPixmap(self.image)
+            self.image = self.BytesToQImage(rawdata)
+            imageQt = ImageQt.ImageQt(self.image)
+            imageQtScaled = imageQt.scaled(QSize(1280,720), Qt.KeepAspectRatio)
+            self.imageView.setPixmap(QPixmap.fromImage(imageQtScaled))
             return True
         except Exception as e:
             QMessageBox.about(self, "", str(e))
@@ -114,8 +109,16 @@ class ScreenShotUI(Request):
         self.show()
         pass
 
+    def OnExitGUI(self):
+        self.CleanUp()
+        self.close()
+        self.parentWindow.HandleChildUIClose(self.baseRequest)
+        self.parentWindow.show()
+
 if __name__ == '__main__':
     from os import environ
+    import sys
+    import client
 
     def suppress_qt_warnings():
         environ["QT_DEVICE_PIXEL_RATIO"] = "0"
@@ -126,7 +129,7 @@ if __name__ == '__main__':
     suppress_qt_warnings()
 
     app = QtWidgets.QApplication(sys.argv)
-    demo = ScreenShotUI(None)
+    demo = ScreenShotUI(None, client.ClientProgram())
     demo.setupUI()
     demo.ShowWindow() 
     sys.exit(app.exec_())

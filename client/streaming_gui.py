@@ -1,24 +1,21 @@
-from os import close
-
-from posixpath import expanduser
-import sys
-import threading
-import socket
-from queue import Queue
-from tkinter.constants import S
 from PySide2.QtCore import *
 from PySide2 import QtGui, QtWidgets
 from PySide2.QtGui import *
 from PySide2.QtWidgets import *
 from PIL import Image, ImageQt
+
+import sys
+import threading
+import socket
+from queue import Queue
 import traceback
 import time
 
+from client import ClientState
+from request_gui import RequestUI
+
 HEADER = 64
 FORMAT = 'utf-8'
-
-from client import ClientState
-from request_gui import Request
 
 def ReceiveMessage(sock):
     '''
@@ -45,9 +42,9 @@ def ReceiveMessage(sock):
     
         return None
 
-class LivestreamUI(Request):
-    def __init__(self, client):
-        super().__init__(client, 'LIVESTREAM')
+class LivestreamUI(RequestUI):
+    def __init__(self, parent, client):
+        super().__init__(parent, client, 'LIVESTREAM')
         self.clientProgram = client
         self.renderThread = None
         self.captureThread = None
@@ -66,7 +63,7 @@ class LivestreamUI(Request):
         self.streaming_button.setFont(font)
         self.streaming_button.setStyleSheet("background-color: rgb(224, 237, 255)")
         self.streaming_button.setObjectName("streaming_button")
-        self.streaming_button.setText(QCoreApplication.translate("MainWindow", "Streaming"))
+        self.streaming_button.setText(QCoreApplication.translate("MainWindow", "Xem"))
 
         self.stop_button = QPushButton(clicked = lambda: self.onStopLivestream())
         font = QtGui.QFont()
@@ -75,10 +72,9 @@ class LivestreamUI(Request):
         self.stop_button.setFont(font)
         self.stop_button.setStyleSheet("background-color: rgb(224, 237, 255)")
         self.stop_button.setObjectName("stop_button")
-        self.stop_button.setText(QCoreApplication.translate("MainWindow", "Stop"))
+        self.stop_button.setText(QCoreApplication.translate("MainWindow", "Dừng"))
 
         self.imageView = QLabel()
-        self.imageView.setStyleSheet("background-color: rgb(224, 237, 255)")
         self.imageView.setObjectName("imageView")
 
         button_layout = QHBoxLayout()
@@ -113,7 +109,7 @@ class LivestreamUI(Request):
             QMessageBox.about(self, "", "Chưa kết nối đến server")
             return False
         elif state != ClientState.SUCCEEDED:
-            QMessageBox.about(self, "", "Lỗi kết nối đến server")
+            QMessageBox.about(self, "", "Thao tác thất bại")
             return False
 
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -127,7 +123,7 @@ class LivestreamUI(Request):
         self.renderThread.start()
 
     def RenderToImageView(self):
-        TARGET_FPS = 60
+        TARGET_FPS = 30
         TIME_FRAME = 1 / TARGET_FPS
 
         target_frame = 1
@@ -179,6 +175,10 @@ class LivestreamUI(Request):
     def ShowWindow(self):
         self.setupUI()
         self.show()
+
+    def CleanUp(self):
+        self.onStopLivestream()
+        return super().CleanUp()
 
 if __name__ == '__main__':
     from os import environ

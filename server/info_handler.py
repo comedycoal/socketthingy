@@ -6,7 +6,7 @@ class InfoHandler():
     def __init__(self):
         pass
 
-    def Execute(self, reqCode:str, data:str):
+    def Execute(self, reqCode, data):
         try:
             if data=="MACADDRESS":
                 mac = '{:0>2X}'.format(uuid.getnode())

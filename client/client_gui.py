@@ -1,9 +1,7 @@
-# -*- coding: utf-8 -*-
-
-import sys
 from PySide2 import QtCore, QtGui, QtWidgets
 from PySide2.QtWidgets import QMessageBox
 
+import sys
 from client import ClientProgram
 from function_gui import FunctionUI
 
@@ -21,6 +19,7 @@ class ClientUI(QtWidgets.QWidget):
             self.Disconnect()
             self.close()
             event.accept()
+            self.close()
         else:
             event.ignore()
 
@@ -31,19 +30,16 @@ class ClientUI(QtWidgets.QWidget):
         # state = True
         if state:
             QMessageBox.about(self, "", "Kết nối đến server thành công")
-            self.connect_button.hide()
-            self.disconnect_button.show()
-            self.functionUI = FunctionUI(self.clientProgram)
+            self.functionUI = FunctionUI(self, self.clientProgram)
             self.functionUI.setupUI()
             self.functionUI.show()
+            self.hide()
 
         else:
-            QMessageBox.about(self, "", "Lỗi kết nối đến server")
+            QMessageBox.about(self, "", "Thao tác thất bại")
 
     def Disconnect(self):
         self.clientProgram.Disconnect()
-        self.disconnect_button.hide()
-        self.connect_button.show()
 
     def setupUI(self):
         self.setObjectName("MainWindow")
@@ -82,26 +78,13 @@ class ClientUI(QtWidgets.QWidget):
         self.connect_button.setGeometry(QtCore.QRect(160, 150, 81, 41))
         font = QtGui.QFont()
         font.setFamily("Helvetica")
-        font.setPointSize(12)
+        font.setPointSize(11)
         self.connect_button.setFont(font)
         self.connect_button.setStyleSheet("background-color: rgb(224, 237, 255)")
         self.connect_button.setCheckable(False)
         self.connect_button.setChecked(False)
         self.connect_button.setObjectName("connect_button")
         self.connect_button.setText(_translate("MainWindow", "Kết nối"))
-
-        self.disconnect_button = QtWidgets.QPushButton(self, clicked = lambda:self.Disconnect())
-        self.disconnect_button.setGeometry(QtCore.QRect(160, 150, 81, 41))
-        font = QtGui.QFont()
-        font.setFamily("Helvetica")
-        font.setPointSize(12)
-        self.disconnect_button.setFont(font)
-        self.disconnect_button.setStyleSheet("background-color: rgb(224, 237, 255)")
-        self.disconnect_button.setCheckable(False)
-        self.disconnect_button.setChecked(False)
-        self.disconnect_button.setObjectName("connect_button")
-        self.disconnect_button.setText(_translate("MainWindow", "Ngắt"))
-        self.disconnect_button.hide()
 
         self.WELCOME_label = QtWidgets.QLabel(self)
         self.WELCOME_label.setGeometry(QtCore.QRect(40, 20, 201, 51))
