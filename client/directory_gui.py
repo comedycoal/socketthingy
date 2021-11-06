@@ -18,21 +18,9 @@ class MySortFilterProxyModel(QSortFilterProxyModel):
                 return True
         data_left = source_left.data()
         data_right = source_right.data()
-        print("left data: " ,data_left)
-        print("right data: " ,data_right)
         if type(data_left) == type(data_right) == str:
             return self.fname(data_left) < self.fname(data_right)
         return super(MySortFilterProxyModel, self).lessThan(source_left, source_right)
-
-    # def greaterThan(self, source_left, source_right):
-    #     if source_left.child(0,0).data() is None:
-    #         if source_right.child(0,0).data() is not None:
-    #             return True
-    #     data_left = source_left.data()
-    #     data_right = source_right.data()
-    #     if type(data_left) == type(data_right) == str:
-    #         return self.fname(data_left) > self.fname(data_right)
-    #     return super(MySortFilterProxyModel, self).greaterThan(source_left, source_right)
 
     @staticmethod
     def fname(key):
@@ -204,7 +192,7 @@ class DirectoryUI(RequestUI):
             self.model.insertRow(0)
             node = QStandardItem(item)
             if ftype == 1:
-                node.appendRow(QStandardItem(None))
+                node.appendRow(QStandardItem("<Empty>"))
             self.model.setItem(0, node)
 
         self.proxyModel = MySortFilterProxyModel(recursiveFilteringEnabled = True)
@@ -234,13 +222,13 @@ class DirectoryUI(RequestUI):
         # if root.parent():
         #     print("root_parent:", root.parent().row(),root.parent().column())
         if nameList:
-            if not root.child(0,0).index().data():
+            if root.child(0,0).index().data() == "<Empty>":
                 root.removeRow(0)
 
         for item, ftype in nameList:
             node = QStandardItem(item)
             if ftype == 1:
-                node.appendRow(QStandardItem(None))
+                node.appendRow(QStandardItem("<Empty>"))
             root.appendRow(node)
             root.setChild(node.row(), node)
             # print("node:", node.column(), node.row())
@@ -272,8 +260,10 @@ class DirectoryUI(RequestUI):
         self.cur_index = source_index
         # print("source index:", source_index.row(), source_index.column())
         # print("source_parent_index:", source_index.parent().row(), source_index.parent().column())
-        self.treeView.expand(index)
-        self.treeView.expand(source_index)
+        if self.treeView.isExpanded(index):
+            self.treeView.setExpanded(index, False)
+        else:
+            self.treeView.expand(index)
         # path = self.findFilePath(source_index)
         # self.thumbnail.setText("Dir:    D:\\" + path.strip("\""))
         if source_index not in self.listIndex:
@@ -387,18 +377,18 @@ class DirectoryUI(RequestUI):
         filePath = "\""
         folderList = []
         while tmp_index.row() != -1 and tmp_index.column() != -1:
-            print(folderList)
+            # print(folderList)
             folderList.append(tmp_index.data())
             tmp_index = tmp_index.parent()
 
         while len(folderList) > 1:
             cur = folderList.pop()
             filePath = filePath + cur
-            print(folderList)
+            # print(folderList)
             filePath = filePath + "\\"
-            print(filePath)
+            # print(filePath)
         filePath = filePath + fileName + "\""
-        print(filePath)
+        # print(filePath)
 
         self.RequestTransfer(filePath, bytes_data)
 
@@ -434,5 +424,5 @@ if __name__ == '__main__':
 
     app = QApplication(sys.argv)
     demo = DirectoryUI(None, client.ClientProgram())
-    demo.ShowWindow() 
+    demo.ShowWindow()
     sys.exit(app.exec_())
