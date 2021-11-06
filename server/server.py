@@ -163,7 +163,7 @@ class ServerProgram:
         state = HandlerState.INVALID
         extraInfo = None
 
-        print(request, data if len(data) < 256 else len(data))
+        print(request, data if data and len(data) < 512 else (len(data) if data else ''))
         # FINISH request exits the current handler
         # EXIT request finishes the program
         if request == "FINISH":
@@ -207,8 +207,8 @@ class ServerProgram:
 
         # Else let current handler handle request
         else:
-            if type(self.currHandler) != DirectoryHandler or request != "TRANSFER":
-                data = str(data)
+            if type(self.currHandler) != DirectoryHandler or request != "TRANSFER" and data:
+                data = data.decode(FORMAT)
             state, extraInfo = self.currHandler.Execute(request, data)
 
         if self.currHandler and immediate:
@@ -216,7 +216,7 @@ class ServerProgram:
             self.currHandler = None
             immediate = False
 
-        print(state, extraInfo if extraInfo != None and len(extraInfo) < 256 else '')
+        print(state, extraInfo if extraInfo and len(extraInfo) < 512 else (len(extraInfo) if extraInfo else ''))
 
         if request == "SHUTDOWN" and state == HandlerState.SUCCEEDED:
             return ServerProgram.QUIT_PROGRAM
@@ -241,9 +241,9 @@ class ServerProgram:
         byteRequest = byteRequest.strip()
         a = byteRequest.split(b' ', 1)
         if len(a) == 2:
-            return str(a[0]), a[1]
+            return a[0].decode(FORMAT), a[1]
         elif len(a) == 1:
-            return str(a[0]), None
+            return a[0].decode(FORMAT), None
         else:
             return None, None
 
