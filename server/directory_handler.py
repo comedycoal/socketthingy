@@ -31,15 +31,13 @@ class DirectoryHandler():
         return ["%s:\\" % d for d in string.ascii_uppercase if os.path.exists('%s:' % d)]
 
     def View(self, path: Path):
-        print(path)
-        print(os.path.isabs(path))
         if not os.path.isabs(path):
             path = self.root / path
         else:
             self.root = path
 
-        if path.exists():
-            return PerformWalk(path)
+        assert path.exists()
+        return PerformWalk(path)
 
     def Validate(self, paths, keep_list = True):
         if type(paths) != list:
@@ -106,6 +104,9 @@ class DirectoryHandler():
         os.rename(src, dest)
 
     def ReceiveFile(self, dest: Path, data):
+        parent = self.Validate(dest.parent, keep_list=False)
+        assert parent != None, "Invalid directory in dest"
+        dest = parent / dest.name
         with open(dest, "wb") as f:
             f.write(data)
 
@@ -159,12 +160,12 @@ class DirectoryHandler():
 if __name__ == "__main__":
     a = DirectoryHandler()
     b = None
-    # with open("README.docx", "rb") as f:
-    #     f.seek(0,2)
-    #     l = f.tell()
-    #     f.seek(0,0)
-    #     b = f.read(l)
-    # b = b'"README2.docx" ' + b
+    with open("README.docx", "rb") as f:
+        f.seek(0,2)
+        l = f.tell()
+        f.seek(0,0)
+        b = f.read(l)
+    b = b'"README2.docx" ' + b
     s, d = a.Execute("INIT", None)
     print(s)
     print(d.decode('utf-8'))
