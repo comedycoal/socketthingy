@@ -1,321 +1,278 @@
-from PySide2.QtCore import *
-from PySide2 import QtGui, QtWidgets
-from PySide2.QtGui import *
-from PySide2.QtWidgets import *
+import tkinter
+from tkinter import ttk
+from tkinter import filedialog
 
+import codecs
+from tkinter.messagebox import showinfo
+
+from Request_gui import Request
 from client import ClientState
-from request_gui import RequestUI
-
-class ReactiveQLineEdit(QLineEdit):
-    def __init__(self, normalStyle, forcedEditStyle):
-        super().__init__()
-        self.justAfterForcedSet = False
-        self.normalStyle = normalStyle
-        self.forcedEditStyle = forcedEditStyle
-        self.setStyleSheet(self.normalStyle)
-        self.textChanged[str].connect(self.onChange)
-
-    def onChange(self, text):
-        if self.justAfterForcedSet:
-            self.setStyleSheet(self.normalStyle)
-            self.setText("")
-            self.justAfterForcedSet = False
-
-    def ForceSetText(self, text):
-        self.setText(text)
-        self.setStyleSheet(self.forcedEditStyle)
-        self.justAfterForcedSet = True
-
-class ReactiveQComboBox(QComboBox):
-    def __init__(self, normalStyle, forcedEditStyle):
-        super().__init__()
-        self.normalStyle = normalStyle
-        self.forcedEditStyle = forcedEditStyle
-        self.setStyleSheet(self.normalStyle)
-        self.activated.connect(self.onChange)
-
-    def onChange(self, text):
-        self.setStyleSheet(self.normalStyle)
-
-    def ForceSetCurrentIndex(self, index):
-        self.setCurrentIndex(index)
-        self.setStyleSheet(self.forcedEditStyle)
-
-class RegistryUI(RequestUI):
-    VALUE_FORCED_EDIT_STYLE = "color: green"
-    VALUE_NORMAL_STYLE = "color: black"
-
-    RegistryTypes = {
-        "BINARY": 0,
-        "DWORD": 1,
-        "QWORD": 2,
-        "STRING": 3,
-        "MULTISTRING": 4,
-        "EXPANDABLESTRING": 5
-    }
-
-    def __init__(self, parentWindow, client):
-        super().__init__(parentWindow, client, 'REGISTRY')
-
-    def setupUI(self):
-        self.setWindowTitle(QCoreApplication.translate("MainWindow", "Registry"))
-        self.resize(500,400)
-
-        font = QtGui.QFont()
-        font.setFamily("Helvetica")
-        font.setPointSize(10)
-        style = "background-color: rgb(224, 237, 255)"
-
-        self.sectionFileLabel = QLabel()
-        self.sectionFileLabel.setFont(font)
-        self.sectionFileLabel.setAlignment(Qt.AlignHCenter)
-        self.sectionFileLabel.setObjectName("sectionValueLabel")
-        self.sectionFileLabel.setText(QCoreApplication.translate("MainWindow", "Sửa Registry bằng tập tin"))
-
-        self.filePathBox = QLineEdit()
-        self.filePathBox.setFont(font)
-        self.filePathBox.setDisabled(True)
-        self.filePathBox.setStyleSheet("background-color: rgb(255, 255, 255)")
-        self.filePathBox.setObjectName("filePathBox")
-
-        self.openFileButton = QPushButton(clicked = self.onBrowseForFile)
-        self.openFileButton.setFont(font)
-        self.openFileButton.setStyleSheet(style)
-        self.openFileButton.setText(QCoreApplication.translate("MainWindow", 'Browse...'))
-
-        self.fileContentView = QTextEdit()
-        self.fileContentView.setFont(font)
-        self.fileContentView.setAlignment(Qt.AlignLeft | Qt.AlignTop)
-        self.fileContentView.setObjectName("regFileView")
-        self.fileContentView.setReadOnly(True)
-        self.fileContentView.setText(QCoreApplication.translate("MainWindow", ""))
-
-        self.fileSendButton = QPushButton(clicked = self.onSendFileButton)
-        self.fileSendButton.setFont(font)
-        self.fileSendButton.setStyleSheet(style)
-        self.fileSendButton.setText(QCoreApplication.translate("MainWindow", 'Gửi'))
-
-        self.sectionValueLabel = QLabel()
-        self.sectionValueLabel.setFont(font)
-        self.sectionValueLabel.setAlignment(Qt.AlignHCenter)
-        self.sectionValueLabel.setObjectName("sectionValueLabel")
-        self.sectionValueLabel.setText(QCoreApplication.translate("MainWindow", "Sửa Registry trực tiếp"))
-
-        self.keyBox = ReactiveQLineEdit(RegistryUI.VALUE_NORMAL_STYLE, RegistryUI.VALUE_FORCED_EDIT_STYLE)
-        self.keyBox.setFont(font)
-        self.keyBox.setObjectName("dir_box")
-        self.keyBox.setText(QCoreApplication.translate("MainWindow", "HKEY_CURRENT_USER\\Some_key"))
-
-        self.valueNameBox = ReactiveQLineEdit(RegistryUI.VALUE_NORMAL_STYLE, RegistryUI.VALUE_FORCED_EDIT_STYLE)
-        self.valueNameBox.setFont(font)
-        self.valueNameBox.setObjectName("subkey_box")
-        self.valueNameBox.setText(QCoreApplication.translate("MainWindow", "SomeSubkey"))
-
-        self.valueTypeBox = ReactiveQComboBox(RegistryUI.VALUE_NORMAL_STYLE, RegistryUI.VALUE_FORCED_EDIT_STYLE)
-        self.valueTypeBox.setFont(font)
-        self.valueTypeBox.setObjectName("type_box")
-        self.valueTypeBox.addItems(sorted(RegistryUI.RegistryTypes, key=RegistryUI.RegistryTypes.get))
-
-        self.valueDataBox = ReactiveQLineEdit(RegistryUI.VALUE_NORMAL_STYLE, RegistryUI.VALUE_FORCED_EDIT_STYLE)
-        self.valueDataBox.setFont(font)
-        self.valueDataBox.setObjectName("value_box")
-        self.valueDataBox.setText(QCoreApplication.translate("MainWindow", "DATA"))
-
-        self.getValueButton = QPushButton(clicked = self.onGetValueButton)
-        self.getValueButton.setFont(font)
-        self.getValueButton.setStyleSheet(style)
-        self.getValueButton.setText(QCoreApplication.translate("MainWindow", 'Get Value'))
-
-        self.setValueButton = QPushButton(clicked = self.onSetValueButton)
-        self.setValueButton.setFont(font)
-        self.setValueButton.setStyleSheet(style)
-        self.setValueButton.setText(QCoreApplication.translate("MainWindow", 'Set value'))
-
-        self.deleteValueButton = QPushButton(clicked = self.onDeleteValueButton)
-        self.deleteValueButton.setFont(font)
-        self.deleteValueButton.setStyleSheet(style)
-        self.deleteValueButton.setText(QCoreApplication.translate("MainWindow", 'Delete value'))
-
-        self.createKeyButton = QPushButton(clicked = self.onCreateKeyButton)
-        self.createKeyButton.setFont(font)
-        self.createKeyButton.setStyleSheet(style)
-        self.createKeyButton.setText(QCoreApplication.translate("MainWindow", 'Create key'))
-
-        self.deleteKeyButton = QPushButton(clicked = self.onDeleteKeyButton)
-        self.deleteKeyButton.setFont(font)
-        self.deleteKeyButton.setStyleSheet(style)
-        self.deleteKeyButton.setText(QCoreApplication.translate("MainWindow", 'Delete Key'))
 
 
-        mainLayout = QVBoxLayout()
-
-        fileLayout = QHBoxLayout()
-        fileLayout.addWidget(self.filePathBox)
-        fileLayout.addWidget(self.openFileButton)
-
-        mainLayout.addWidget(self.sectionFileLabel)
-        mainLayout.addLayout(fileLayout)
-        mainLayout.addWidget(self.fileContentView)
-
-        sendButtonLayout = QHBoxLayout()
-        for i in range(5):
-            sendButtonLayout.addWidget(QLabel())
-        sendButtonLayout.addWidget(self.fileSendButton)
-        for i in range(5):
-            sendButtonLayout.addWidget(QLabel())
-        mainLayout.addLayout(sendButtonLayout)
-        mainLayout.addSpacing(20)
-
-
-        def MakeLabel(text):
-            label = QLabel(text)
-            label.setFont(font)
-            label.setObjectName("text"+"_label")
-            return label
-
-        valueLayout = QFormLayout()
-        valueLayout.addRow(MakeLabel("Key:      "), self.keyBox)
-        valueLayout.addRow(MakeLabel("Subkey:   "), self.valueNameBox)
-        valueLayout.addRow(MakeLabel("Type:     "), self.valueTypeBox)
-        valueLayout.addRow(MakeLabel("Value:    "), self.valueDataBox)
-
-        valueButtonLayout = QHBoxLayout()
-        valueButtonLayout.addWidget(self.getValueButton)
-        valueButtonLayout.addWidget(self.setValueButton)
-        valueButtonLayout.addWidget(self.deleteValueButton)
-        valueButtonLayout.addWidget(self.createKeyButton)
-        valueButtonLayout.addWidget(self.deleteKeyButton)
-
-
-        mainLayout.addWidget(self.sectionValueLabel)
-        mainLayout.addLayout(valueLayout)
-        mainLayout.addLayout(valueButtonLayout)
-
-        self.setLayout(mainLayout)
-
-    def onBrowseForFile(self):
-        options = QFileDialog.Options()
-        options |= QFileDialog.DontUseNativeDialog
-        filename, _ = QFileDialog.getOpenFileName(
-            self, "Open .reg file", r"C:", "Registry Files (*.reg)", options=options
-        )
-        if filename:
-            self.filePathBox.setText(filename)
-            with open(filename, "r") as f:
-                content = f.read()
-                self.fileContentView.setText(QCoreApplication.translate("MainWindow", content))
-        pass
-
-    def onSendFileButton(self):
-        content = self.fileContentView.toPlainText()
-        state, _ = self.client.MakeRequest("REGFILE " + content)
-        if state == ClientState.NOCONNECTION:
-            QMessageBox.about(self, "", "Chưa kết nối đến server")
-        elif state != ClientState.SUCCEEDED:
-            QMessageBox.about(self, "", "Thao tác thất bại")
-        else:
-            QMessageBox.about(self, "", "Sửa thành công")
-
-    def GetKeyAndValueInformation(self):
-        return (self.keyBox.text(), self.valueNameBox.text(), str(self.valueTypeBox.currentText()), self.valueDataBox.text())
-        pass
-
-    def SetKeyAndValueInformation(self, key=None, valueName=None, valueType=None, valueData=None):
-        values = [key, valueName, valueType, valueData]
-        affectedBoxes = []
-        affectedBoxes.append(self.keyBox if key != None else None)
-        affectedBoxes.append(self.valueNameBox if valueName != None else None)
-        affectedBoxes.append(self.valueTypeBox if valueType != None else None)
-        affectedBoxes.append(self.valueDataBox if valueData != None else None)
-
-        for i in range(0, len(affectedBoxes)):
-            box = affectedBoxes[i]
-            if i == 2 and box:
-                box.ForceSetCurrentIndex(RegistryUI.RegistryTypes.get(valueType, -1))
-            elif box:
-                box.ForceSetText(values[i])
-
-    def onGetValueButton(self):
-        keypath, name, _, _ = self.GetKeyAndValueInformation()
-        state, data = self.client.MakeRequest("GETVALUE " + keypath + ' ' + name)
-        try:
-            if state == ClientState.NOCONNECTION:
-                QMessageBox.about(self, "", "Chưa kết nối đến server")
-            elif state != ClientState.SUCCEEDED:
-                QMessageBox.about(self, "", "Thao tác thất bại")
-            else:
-                parts = data.decode('utf-8').rsplit(' ', 1)
-                value = parts[0]
-                t = parts[1]
-                self.SetKeyAndValueInformation(None, None, t, value)
-        except Exception as e:
-            print(e)
-            QMessageBox.about(self, "", "Dữ liệu trả về lỗi")
-
-    def onSetValueButton(self):
-        keypath, name, t, value = self.GetKeyAndValueInformation()
-        state, _ = self.client.MakeRequest("SETVALUE " + ' '.join([keypath, name, t, value]))
-        if state == ClientState.NOCONNECTION:
-            QMessageBox.about(self, "", "Chưa kết nối đến server")
-        elif state != ClientState.SUCCEEDED:
-            QMessageBox.about(self, "", "Thao tác thất bại")
-        else:
-            QMessageBox.about(self, "", "Sửa thành công")
-
-    def onDeleteValueButton(self):
-        keypath, name, t, _ = self.GetKeyAndValueInformation()
-        state, _ = self.client.MakeRequest("DELETEVALUE " + ' '.join([keypath, name]))
-        if state == ClientState.NOCONNECTION:
-            QMessageBox.about(self, "", "Chưa kết nối đến server")
-        elif state != ClientState.SUCCEEDED:
-            QMessageBox.about(self, "", "Thao tác thất bại")
-        else:
-            QMessageBox.about(self, "", "Xoá thành công")
-            self.SetKeyAndValueInformation(None, None, -1, "")
-
-    def onCreateKeyButton(self):
-        keypath, _ , _, _ = self.GetKeyAndValueInformation()
-        state, _ = self.client.MakeRequest("CREATEKEY " + keypath)
-        if state == ClientState.NOCONNECTION:
-            QMessageBox.about(self, "", "Chưa kết nối đến server")
-        elif state != ClientState.SUCCEEDED:
-            QMessageBox.about(self, "", "Thao tác thất bại")
-        else:
-            QMessageBox.about(self, "", "Tạo Key thành công")
-            self.SetKeyAndValueInformation(None, "", -1, "")
-        pass
-
-    def onDeleteKeyButton(self):
-        keypath, _ , _, _ = self.GetKeyAndValueInformation()
-        state, _ = self.client.MakeRequest("DELETEKEY " + keypath)
-        if state == ClientState.NOCONNECTION:
-            QMessageBox.about(self, "", "Chưa kết nối đến server")
-        elif state != ClientState.SUCCEEDED:
-            QMessageBox.about(self, "", "Thao tác thất bại")
-        else:
-            QMessageBox.about(self, "", "Xoá Key thành công")
-            self.SetKeyAndValueInformation(None, "", -1, "")
+class Registry(Request):
+    def __init__(self, client):
+        super().__init__(client, "REGISTRY")
 
     def ShowWindow(self):
-        self.setupUI()
-        self.show()
+        self.MainWindow = tkinter.Tk()
+        self.MainWindow.title("Registry")
+
+        self.MainWindow.geometry("500x500")
+        
+        # Phần file registry
+        self.regFilePathInputBox = tkinter.Entry(self.MainWindow)
+        self.regFilePathInputBox.insert(0, "Đường dẫn…")
+        self.regFilePathInputBox.place(x = 10, y = 20, height = 30, width = 380)
+
+        self.browseButton = tkinter.Button(self.MainWindow, text = 'Browse...', command = self.Browser)
+        self.browseButton.place(x = 400, y = 20, height = 30, width = 90)
+
+        self.regFileContent = tkinter.Text(self.MainWindow)
+        self.regFileContent.insert(tkinter.END, "Nội dung")
+        self.regFileContent.place(x = 10 , y = 60, height = 100, width = 380)
+        regFileContent_scrollbar = ttk.Scrollbar(self.MainWindow)
+        self.regFileContent.config(yscrollcommand = regFileContent_scrollbar.set)
+        regFileContent_scrollbar.config(command = self.regFileContent.yview)
+
+        sendRegFileButton = tkinter.Button(self.MainWindow, text = 'Gởi nội dung', command = self.OnFileRegContentSend)
+        sendRegFileButton.place(x = 400, y = 60, height = 100, width = 90)
+
+        # Phân gửi trực tiếp
+        directChangeFrame = tkinter.Frame(self.MainWindow, highlightbackground = "grey", bd = 1, highlightthickness = 0.5)
+        directChangeFrame.place(x = 10, y = 180, height = 300, width = 480)
+
+        directChangeFrameName = tkinter.Label(self.MainWindow, text = 'Sửa giá trị trực tiếp')
+        directChangeFrameName.place(x = 20, y = 170, height = 20)
+        
+        function = ('Get value', 'Set value', 'Delete value', 'Create key', 'Delete key')
+        n1 = tkinter.StringVar()
+        self.registry_FunctionBox = ttk.Combobox(self.MainWindow, textvariable = n1, values = function, state = 'normal')
+        self.registry_FunctionBox.insert(tkinter.END, 'Chọn chức năng')
+        self.registry_FunctionBox.place(x = 20, y = 200, height = 25, width = 460)
+        self.registry_FunctionBox.bind('<<ComboboxSelected>>', self.onFunction)
+
+        self.registry_entry = tkinter.Entry(self.MainWindow)
+        self.registry_entry.insert(0, "Đường dẫn")
+        self.registry_entry.place(x = 20, y = 235, height = 25, width = 460)
+
+        self.createNameValueBox()
+
+        self.createValueBox()
+        
+        self.createDatatypeBox()
+
+        self.registry_listbox = tkinter.Listbox(self.MainWindow)
+        self.registry_listbox.place(x = 20, y = 305, height = 130, width = 460)
+
+        registry_sendButton = tkinter.Button(self.MainWindow, text = 'Gởi', command = self.onSending)
+        registry_sendButton.place(x = 140, y = 445, height = 25, width = 80)
+
+        registry_clearButton = tkinter.Button(self.MainWindow, text = 'Xóa', command = self.onClearing)
+        registry_clearButton.place(x = 270, y = 445, height = 25, width = 80)
+
+        self.MainWindow.protocol('WM_DELETE_WINDOW', self.OnExitGUI)
+        self.MainWindow.mainloop()
+
+    def createNameValueBox(self):
+        self.registry_ValueNameBox = tkinter.Entry(self.MainWindow)
+        self.registry_ValueNameBox.insert(0, "Name value")
+        self.registry_ValueNameBox.place(x = 20, y = 270, height = 25, width = 140)
+
+    def createValueBox(self):
+        self.registry_ValueBox = tkinter.Entry(self.MainWindow)
+        self.registry_ValueBox.insert(0, "Value")
+        self.registry_ValueBox.place(x = 170, y = 270, height = 25, width = 150)
+
+    def createDatatypeBox(self):
+        datatype = ('String', 'Binary', 'DWORD', 'QWORD', 'Multi-String', 'Expandable String')
+        n2 = tkinter.StringVar()
+        self.registry_DatatypeBox = ttk.Combobox(self.MainWindow, textvariable = n2, values = datatype, state = 'normal')
+        self.registry_DatatypeBox.insert(tkinter.END, "Kiểu dữ liệu")
+        self.registry_DatatypeBox.place(x = 330, y = 270, height = 25, width = 150)
+
+    def Browser(self):
+        filename = filedialog.askopenfilename(initialdir = 'C:', title = 'Open', 
+            filetypes = (('reg files', '*.reg'), ('all files', '*.*')))
+        self.regFilePathInputBox.delete(0, tkinter.END)
+        self.regFilePathInputBox.insert(0, filename)
+        
+        regFile = codecs.open(filename, encoding = 'utf_8')
+        regContent = regFile.read()
+        regFile.close()
+        self.regFileContent.delete('1.0', tkinter.END)
+        self.regFileContent.insert(tkinter.END, regContent)
+        
+
+    def OnFileRegContentSend(self):
+        data = self.regFileContent.get('1.0', tkinter.END)
+        state, _ = self.client.MakeRequest("REGFILE " + data)
+        if state == ClientState.SUCCEEDED:
+            showinfo(title = '', message = 'Sửa thành công')
+        else:
+            showinfo(title = '', message = 'Sửa thất bại')
+            pass
+
+    def onFunction(self, event):
+        try:
+            msg = self.registry_FunctionBox.get()
+            path = self.registry_entry.get()
+            valuename = None
+            value = None
+            type = None
+            if msg == 'Get value':
+                if self.registry_ValueNameBox == None:
+                    self.createNameValueBox()
+                if self.registry_ValueBox:
+                    self.registry_ValueBox.destroy()
+                    self.registry_ValueBox = None
+                if self.registry_DatatypeBox:
+                    self.registry_DatatypeBox.destroy()
+                    self.registry_DatatypeBox = None
+
+            elif msg == 'Set value':
+                if self.registry_ValueNameBox == None:
+                    self.createNameValueBox()
+                if self.registry_ValueBox == None:
+                    self.createValueBox()
+                if self.registry_DatatypeBox == None:
+                    self.createDatatypeBox()
+
+            elif msg == 'Delete value':
+                if self.registry_ValueNameBox == None:
+                    self.createNameValueBox()
+                if self.registry_ValueBox:
+                    self.registry_ValueBox.destroy()
+                    self.registry_ValueBox = None
+                if self.registry_DatatypeBox:
+                    self.registry_DatatypeBox.destroy()
+                    self.registry_DatatypeBox = None
+
+            elif msg == 'Create key':
+                if self.registry_ValueNameBox:
+                    self.registry_ValueNameBox.destroy()
+                    self.registry_ValueNameBox = None
+                if self.registry_ValueBox:
+                    self.registry_ValueBox.destroy()
+                    self.registry_ValueBox = None
+                if self.registry_DatatypeBox:
+                    self.registry_DatatypeBox.destroy()
+                    self.registry_DatatypeBox = None
+
+            elif msg == 'Delete key':
+                if self.registry_ValueNameBox:
+                    self.registry_ValueNameBox.destroy()
+                    self.registry_ValueNameBox = None
+                if self.registry_ValueBox:
+                    self.registry_ValueBox.destroy()
+                    self.registry_ValueBox = None
+                if self.registry_DatatypeBox:
+                    self.registry_DatatypeBox.destroy()
+                    self.registry_DatatypeBox = None
+        except Exception as e:
+            showinfo(title = '', message = e)
         pass
 
-if __name__ == '__main__':
-    from os import environ
-    import sys
-    import client
+    def RequestGetValue(self, path, valuename):
+        if self.registry_ValueNameBox == None:
+            self.createNameValueBox()
+        if self.registry_ValueBox:
+            self.registry_ValueBox.destroy()
+            self.registry_ValueBox = None
+        if self.registry_DatatypeBox:
+            self.registry_DatatypeBox.destroy()
+            self.registry_DatatypeBox = None
 
-    def suppress_qt_warnings():
-        environ["QT_DEVICE_PIXEL_RATIO"] = "0"
-        environ["QT_AUTO_SCREEN_SCALE_FACTOR"] = "1"
-        environ["QT_SCREEN_SCALE_FACTORS"] = "1"
-        environ["QT_SCALE_FACTOR"] = "1"
+        valuename = self.registry_ValueNameBox.get()
+        state, data = self.client.MakeRequest("GETVALUE " + path + ' ' + valuename)
 
-    suppress_qt_warnings()
+        if state == ClientState.SUCCEEDED:
+            self.registry_listbox.insert(tkinter.END, data)
+        else:
+            self.registry_listbox.insert(tkinter.END, 'Lỗi')
+        pass
 
-    app = QtWidgets.QApplication(sys.argv)
-    tmp = client.ClientProgram()
-    demo = RegistryUI(None, tmp)
-    demo.ShowWindow()
-    sys.exit(app.exec_())
+    def RequestSetValue(self, path, valuename, type, value):
+        valuename = self.registry_ValueNameBox.get()
+        value = self.registry_ValueBox.get()
+        type = self.registry_DatatypeBox.get()
+        
+        dtype = ['STRING', 'BINARY', 'DWORD', 'QWORD', 'MULTISTRING', 'EXPANDABLESTRING']
+        if type == 'String':
+            datatype = dtype[0]
+        elif type == 'Binary':
+            datatype = dtype[1]
+        if type == 'DWORD':
+            datatype = dtype[2]
+        elif type == 'QWORD':
+            datatype = dtype[3]
+        elif type == 'Multi-String':
+            datatype = dtype[4]
+        elif type == 'Expdandable String':
+            datatype = dtype[5]
+
+        state, _ = self.client.MakeRequest("SETVALUE " + path + " " + valuename + " " + datatype + " " + value)
+        if state != ClientState.SUCCEEDED or datatype not in dtype:
+            self.registry_listbox.insert(tkinter.END, 'Lỗi')
+        else:
+            self.registry_listbox.insert(tkinter.END, 'Set value thành công')
+
+        pass
+
+    def RequestDeleteValue(self, path, valuename):
+        valuename = self.registry_ValueNameBox.get()
+        state, _ = self.client.MakeRequest("DELETEVALUE " + path + " " + valuename)
+        if state == ClientState.SUCCEEDED:
+            self.registry_listbox.insert(tkinter.END, 'Xóa value thành công')
+        else:
+            self.registry_listbox.insert(tkinter.END, 'Lỗi')
+
+        pass
+
+    def RequestCreateKey(self, path):
+        state, _ = self.client.MakeRequest("CREATEKEY " + path)
+        if state == ClientState.SUCCEEDED:
+            self.registry_listbox.insert(tkinter.END, 'Tạo key thành công')
+        else:
+            self.registry_listbox.insert(tkinter.END, 'Lỗi')
+        
+        pass
+
+    def RequestDeleteKey(self, path):
+        state, _ = self.client.MakeRequest("DELETEKEY " + path)
+        if state == ClientState.SUCCEEDED:
+            self.registry_listbox.insert(tkinter.END, 'Xóa key thành công')
+        else:
+            self.registry_listbox.insert(tkinter.END, 'Lỗi')
+        
+        pass
+    
+    def onSending(self):
+        try:
+            msg = self.registry_FunctionBox.get()
+            path = self.registry_entry.get()
+            valuename = None
+            value = None
+            type = None
+            if msg == 'Get value':  
+                self.RequestGetValue(path, valuename)
+            elif msg == 'Set value':
+                self.RequestSetValue(path, valuename, type, value)
+            elif msg == 'Delete value':
+                self.RequestDeleteValue(path, valuename)
+            elif msg == 'Create key':
+                self.RequestCreateKey(path)
+            elif msg == 'Delete key':
+                self.RequestDeleteKey(path)
+        except Exception as e:
+            showinfo(title = '', message = e)
+        
+        pass
+
+    def onClearing(self):
+        self.registry_listbox.delete(0, tkinter.END)
+        pass
+
+if __name__ == "__main__":
+    a = Registry(None)
+    a.ShowWindow()
+    
