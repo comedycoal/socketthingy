@@ -2,10 +2,26 @@ from PySide2.QtCore import *
 from PySide2 import QtGui, QtWidgets
 from PySide2.QtGui import *
 from PySide2.QtWidgets import *
+import re
 
 from client import ClientState
 from request_gui import RequestUI
 import json
+
+class MySortFilterProxyModel(QSortFilterProxyModel):
+    def lessThan(self, source_left, source_right):
+        data_left = source_left.data()
+        data_right = source_right.data()
+        if type(data_left) == type(data_right) == str:
+            return self.fname(data_left) < self.fname(data_right)
+        return super(MySortFilterProxyModel, self).lessThan(source_left, source_right)
+
+    @staticmethod
+    def fname(key):
+        parts = re.split(r'(\d*\.\d+|\d+)', key)
+        parts[0] = parts[0].upper()
+        return tuple((e.swapcase() if i % 2 == 0 else float(e))
+                for i, e in enumerate(parts))
 
 class ProcessUI(RequestUI):
     def __init__(self, parent, client):
@@ -128,7 +144,7 @@ class ProcessUI(RequestUI):
         self.itemlist = json.loads(rawdata)
         self.addItem(model)
 
-        proxy_model = QSortFilterProxyModel(recursiveFilteringEnabled = True)
+        proxy_model = MySortFilterProxyModel(recursiveFilteringEnabled = True)
         proxy_model.setSourceModel(model)
         return proxy_model
 
